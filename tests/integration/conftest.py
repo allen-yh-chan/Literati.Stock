@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 import pytest_asyncio
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from testcontainers.postgres import PostgresContainer
 
 from literati_stock.core.settings import Settings
@@ -63,8 +63,29 @@ async def session(db_settings: Settings, alembic_upgraded: None) -> AsyncIterato
     engine = build_engine(db_settings)
     factory = build_session_factory(engine)
     async with factory() as s:
-        await s.execute(text("truncate table ingest_raw, ingest_failure restart identity"))
+        await s.execute(
+            text(
+                "truncate table stock_price, ingest_cursor, ingest_raw, ingest_failure "
+                "restart identity cascade"
+            )
+        )
         await s.commit()
         yield s
         await s.rollback()
     await engine.dispose()
+
+
+@pytest_asyncio.fixture
+async def session_factory(
+    db_settings: Settings, alembic_upgraded: None
+) -> AsyncIterator[async_sessionmaker[AsyncSession]]:
+    """Per-test `async_sessionmaker` whose engine is disposed on teardown.
+
+    Used by tests that need to exercise a service that owns its own session
+    scope (e.g. `PriceTransformService`), while still sharing the test DB.
+    """
+    engine = build_engine(db_settings)
+    try:
+        yield build_session_factory(engine)
+    finally:
+        await engine.dispose()
