@@ -84,5 +84,5 @@
   - 驗收:exit 0
 - [x] **K4. 寫 `qa-test-scope.md`(依 `testing-and-qa.md` 模板)**
   - 驗收:含「測試目標、覆蓋情境、未覆蓋風險、執行指令、結果」五段;放在 `openspec/changes/ingest-foundation/qa-test-scope.md`
-- [ ] **K5. `/opsx:archive ingest-foundation`,git push,`gh pr create`(target=main)**
+- [x] **K5. `/opsx:archive ingest-foundation`,git push,`gh pr create`(target=main)**
   - 驗收:`openspec/changes/ingest-foundation/` 已搬到 `openspec/changes/archive/<timestamp>-ingest-foundation/`(或同等);PR 描述含「Make-vs-Buy 結論」「License 表」「SQL injection 已檢查:N/A or 已用 parameterised query」「PII 已檢查:無 PII(公開市場資料)」「Docker compose up 結果」;PR URL 取得
