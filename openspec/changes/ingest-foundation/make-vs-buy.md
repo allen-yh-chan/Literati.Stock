@@ -149,8 +149,37 @@
 
 ---
 
-## 你需要決議的事
+## 範圍補充(使用者後加要求)
 
-1. 上述 4 個領域的選擇是否全部接受?(Y/具體要改哪個)
-2. 是否同意 ingest-foundation 範圍**僅含運維表**(`ingest_raw` + `ingest_failure`),domain table 留待議題 3 後另開 change?(Y/N)
-3. 同時確認 license:`asyncpg`(Apache-2.0)、`finmind`(待我下一步驗證 SDK 實際 LICENSE)、`pydantic-settings`(MIT)、`hatchling`(MIT)。其中 `finmind` SDK 的 license 我會在你拍板後第一時間驗證,若非 permissive 我會停下回報。
+- **Runtime = Docker Desktop**:本 change 必須產出可用 `docker compose up` 啟動的 dev stack(app + PostgreSQL),production image 為 multi-stage Dockerfile(uv-based builder + slim runtime)。增加產物:`Dockerfile`、`compose.yaml`、`.dockerignore`、`.env.example`。預估 +80–120 行。
+
+## License 驗證結果(§3e)
+
+全部已對 PyPI / GitHub LICENSE 比對完成。
+
+| 套件 | License | 結論 |
+|---|---|---|
+| apscheduler | MIT | ✓ |
+| aiolimiter | MIT | ✓ |
+| tenacity | Apache-2.0 | ✓ |
+| structlog | MIT OR Apache-2.0 (dual) | ✓ |
+| finmind | **Apache-2.0**(GitHub LICENSE 確認) | ✓ |
+| asyncpg | Apache-2.0 | ✓ |
+| pydantic / pydantic-settings | MIT | ✓ |
+| sqlalchemy / alembic | MIT | ✓ |
+| httpx | BSD-3-Clause | ✓ |
+| hatchling | **MIT**(GitHub LICENSE 確認) | ✓ |
+| ruff / pyright / pre-commit | MIT | ✓ |
+| pytest / pytest-cov / pytest-mock | MIT | ✓ |
+| pytest-asyncio / freezegun / testcontainers | Apache-2.0 | ✓ |
+| structlog 之鄰:python-json-logger(若需要) | BSD-2-Clause | ✓ |
+| **hypothesis** | **MPL-2.0**(weak copyleft,非允許清單) | **本 change 不採用**(test-only 且非必需,日後 property-test 需求出現再徵詢核准) |
+
+全部直接相依套件均為 permissive license,符合 §3e。
+
+## 已決議(2026-04-17)
+
+1. ✅ 4 個 Buy 候選全部採用(APScheduler / aiolimiter / tenacity / structlog)
+2. ✅ 範圍僅含運維表(`ingest_raw` + `ingest_failure`),domain table 延後另開 change
+3. ✅ License 全綠;hypothesis 暫不引入
+4. ✅ Runtime = Docker Desktop(Dockerfile + compose.yaml + .dockerignore)
