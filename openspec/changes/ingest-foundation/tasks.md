@@ -69,9 +69,9 @@
 
 ## J. Docker
 
-- [ ] **J1. multi-stage `Dockerfile`(builder stage:`python:3.12-slim-bookworm` + 安裝 uv + `uv sync --frozen --no-dev --no-group test --no-group notebook --no-group research`;runtime stage:`python:3.12-slim-bookworm` + copy `.venv` + copy `src` + non-root user + `ENTRYPOINT ["uvicorn","literati_stock.api.main:app","--host","0.0.0.0","--port","8000"]`)**
+- [x] **J1. multi-stage `Dockerfile`(builder stage:`python:3.12-slim-bookworm` + 安裝 uv + `uv sync --frozen --no-dev --no-group test --no-group notebook --no-group research`;runtime stage:`python:3.12-slim-bookworm` + copy `.venv` + copy `src` + non-root user + `ENTRYPOINT ["uvicorn","literati_stock.api.main:app","--host","0.0.0.0","--port","8000"]`)**
   - 驗收:`docker build -t literati-stock:dev .` 成功;`docker image inspect literati-stock:dev --format '{{.Size}}'` < 300000000(300MB);`docker run --rm literati-stock:dev literati-ingest --help` 顯示 CLI help
-- [ ] **J2. `compose.yaml`(`app` 服務 + `postgres:16-alpine` 服務 with volume + healthcheck);`.dockerignore`(排除 `.venv`、`__pycache__`、`.pytest_cache`、`.git`、`tests`、`notebooks`、`docs` 等)**
+- [x] **J2. `compose.yaml`(`app` 服務 + `postgres:16-alpine` 服務 with volume + healthcheck);`.dockerignore`(排除 `.venv`、`__pycache__`、`.pytest_cache`、`.git`、`tests`、`notebooks`、`docs` 等)**
   - 驗收:`docker compose up --build -d` 啟動兩 service;30 秒內 `docker compose exec app curl -fs http://localhost:8000/healthz` 回 200;`docker compose down -v` 乾淨清除 volume
 
 ## K. QA 與收尾

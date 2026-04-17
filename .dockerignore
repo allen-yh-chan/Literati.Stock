@@ -1,0 +1,51 @@
+# Python / virtual env
+.venv/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+build/
+dist/
+wheels/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# VCS + CI
+.git/
+.github/
+.gitmodules
+.devpro-agent-rules/
+
+# Local tool state
+.claude/
+.cursor/
+.windsurfrules
+GEMINI.md
+
+# Project-local but not needed in the image
+tests/
+notebooks/
+docs/
+openspec/
+CONTRIBUTING.md
+CHANGELOG.md
+AGENTS.md
+.env
+.env.*
+!.env.example
+.python-version
+
+# Logs
+*.log
+logs/
