@@ -21,14 +21,14 @@
   - 驗收:unit test 驗證:必填欄位 missing 時 `pytest.raises(ValidationError)`;能正確從 `.env.test` 載入;`Settings()` instance 為 immutable(`frozen=True`)
 - [x] **B2. `core/logging.py`:structlog bootstrap;`LOG_FORMAT=json`(prod)/`console`(dev)兩 mode**
   - 驗收:unit test 驗證:`get_logger("x").info("hello", k=1)` json mode 輸出可被 `json.loads` parse 且含 `event`/`level`/`timestamp`/`k` keys;console mode 為 human-readable
-- [ ] **B3. `ingest/db.py`:`create_async_engine` + `async_sessionmaker` factory,connection string 從 Settings**
+- [x] **B3. `ingest/db.py`:`create_async_engine` + `async_sessionmaker` factory,connection string 從 Settings**
   - 驗收:integration test 在 testcontainers PG 上 `async with AsyncSessionLocal() as s: await s.execute(text("select 1"))` 取得 1
 
 ## C. 資料庫運維表
 
-- [ ] **C1. `ingest/models.py`:SQLAlchemy 2.0 `DeclarativeBase` + `IngestRaw`(id, dataset, fetched_at, request_args jsonb, payload jsonb)+ `IngestFailure`(id, dataset, occurred_at, request_args jsonb, error_class, error_message, traceback text, attempts int)**
+- [x] **C1. `ingest/models.py`:SQLAlchemy 2.0 `DeclarativeBase` + `IngestRaw`(id, dataset, fetched_at, request_args jsonb, payload jsonb)+ `IngestFailure`(id, dataset, occurred_at, request_args jsonb, error_class, error_message, traceback text, attempts int)**
   - 驗收:每欄位有 `Mapped[T]` 型別宣告;Pyright strict 對該檔無 error
-- [ ] **C2. Alembic 設定(`alembic.ini` + `migrations/env.py` async + `script_location`)+ 第一個 migration `add_ops_tables`**
+- [x] **C2. Alembic 設定(`alembic.ini` + `migrations/env.py` async + `script_location`)+ 第一個 migration `add_ops_tables`**
   - 驗收:integration test 跑 `alembic upgrade head` 後 `pg_class` 含兩張表;再跑 `alembic downgrade base` 後兩表消失
 
 ## D. FinMind client(限速 + 重試)
@@ -64,7 +64,7 @@
 
 ## I. 測試環境
 
-- [ ] **I1. `tests/conftest.py`:testcontainers `PostgresContainer` session-scoped fixture + 自動 alembic upgrade head + 每個 test function teardown rollback**
+- [x] **I1. `tests/conftest.py`:testcontainers `PostgresContainer` session-scoped fixture + 自動 alembic upgrade head + 每個 test function teardown rollback**
   - 驗收:`uv run pytest tests/integration -v` 啟一個 PG container、跑所有 integration test 全綠、teardown 後 `docker ps` 無殘留 container
 
 ## J. Docker
