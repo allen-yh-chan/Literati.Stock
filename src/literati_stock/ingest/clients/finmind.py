@@ -106,15 +106,23 @@ class FinMindClient:
         self._retry_wait_max = retry_wait_max
         self._own_client = http_client is None
 
+    @property
+    def max_attempts(self) -> int:
+        return self._max_attempts
+
     async def fetch(
         self,
         dataset: str,
         *,
-        data_id: str,
-        start_date: str,
+        data_id: str | None = None,
+        start_date: str | None = None,
         end_date: str | None = None,
     ) -> list[dict[str, Any]]:
-        """Fetch one dataset slice; returns the ``data`` array from the body."""
+        """Fetch a dataset slice; returns the ``data`` array from the body.
+
+        `data_id` and `start_date` are optional to accommodate datasets like
+        `TaiwanStockInfo` that return the full snapshot without filters.
+        """
 
         @retry(
             retry=retry_if_exception_type(_TransientError),
@@ -126,11 +134,11 @@ class FinMindClient:
         )
         async def _attempt() -> list[dict[str, Any]]:
             async with self._limiter:
-                params: dict[str, str] = {
-                    "dataset": dataset,
-                    "data_id": data_id,
-                    "start_date": start_date,
-                }
+                params: dict[str, str] = {"dataset": dataset}
+                if data_id is not None:
+                    params["data_id"] = data_id
+                if start_date is not None:
+                    params["start_date"] = start_date
                 if end_date is not None:
                     params["end_date"] = end_date
                 if self._token:

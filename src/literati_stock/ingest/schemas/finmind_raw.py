@@ -46,6 +46,21 @@ class TaiwanStockInstitutionalInvestorsBuySellRow(_FinMindRow):
     name: str
 
 
+class TaiwanStockInfoRow(_FinMindRow):
+    """Row shape for dataset ``TaiwanStockInfo`` (listing metadata snapshot).
+
+    FinMind returns multiple rows per `stock_id` across dates when metadata
+    has changed; consumers MUST dedupe by `(stock_id, max(date))`.
+    `industry_category` can be empty string for some securities.
+    """
+
+    date: date
+    stock_id: str = Field(min_length=4)
+    stock_name: str
+    industry_category: str
+    type: str  # market: twse / tpex / emerging
+
+
 # Dataset → expected top-level field set. Consumed by `SchemaSentinel`.
 EXPECTED_FIELDS: dict[str, frozenset[str]] = {
     "TaiwanStockPrice": frozenset(
@@ -65,4 +80,5 @@ EXPECTED_FIELDS: dict[str, frozenset[str]] = {
     "TaiwanStockInstitutionalInvestorsBuySell": frozenset(
         {"date", "stock_id", "buy", "sell", "name"}
     ),
+    "TaiwanStockInfo": frozenset({"date", "stock_id", "stock_name", "industry_category", "type"}),
 }

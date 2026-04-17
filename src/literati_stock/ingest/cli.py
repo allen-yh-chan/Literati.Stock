@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+from datetime import date, datetime
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import httpx
 from aiolimiter import AsyncLimiter
@@ -15,6 +17,8 @@ from literati_stock.ingest.clients.finmind import FinMindClient
 from literati_stock.ingest.db import build_engine, build_session_factory
 from literati_stock.ingest.storage import RawPayloadStore
 from literati_stock.price.transform import PriceTransformService, TransformResult
+from literati_stock.universe.daily_ingest import DailyPriceIngestService
+from literati_stock.universe.service import UniverseSyncService
 
 
 async def _run_once(
@@ -81,6 +85,21 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Transform pending TaiwanStockPrice ingest_raw rows into stock_price.",
     )
 
+    sub.add_parser(
+        "refresh-universe",
+        help="Sync TaiwanStockInfo into stock_universe (preserves in_watchlist).",
+    )
+
+    sp = sub.add_parser(
+        "sync-prices-today",
+        help="Fetch TaiwanStockPrice for every watchlist stock on --as-of.",
+    )
+    sp.add_argument(
+        "--as-of",
+        default=None,
+        help="Date (YYYY-MM-DD). Defaults to today in Asia/Taipei.",
+    )
+
     return parser
 
 
@@ -108,8 +127,43 @@ def main(argv: list[str] | None = None) -> int:
         print(result.model_dump_json())
         return 0
 
+    if args.command == "refresh-universe":
+        summary = asyncio.run(_refresh_universe(settings))
+        print(summary.model_dump_json())
+        return 0
+
+    if args.command == "sync-prices-today":
+        as_of = datetime.strptime(args.as_of, "%Y-%m-%d").date() if args.as_of else _today_taipei()
+        result = asyncio.run(_sync_prices_today(settings, as_of))
+        print(result.model_dump_json(by_alias=False))
+        return 0
+
     parser.print_help()
     return 2
+
+
+def _today_taipei() -> date:
+    return datetime.now(ZoneInfo("Asia/Taipei")).date()
+
+
+async def _refresh_universe(settings: Settings):  # noqa: ANN202 — Pydantic returned
+    engine = build_engine(settings)
+    factory = build_session_factory(engine)
+    try:
+        service = UniverseSyncService(factory, settings)
+        return await service.sync()
+    finally:
+        await engine.dispose()
+
+
+async def _sync_prices_today(settings: Settings, as_of: date):  # noqa: ANN202
+    engine = build_engine(settings)
+    factory = build_session_factory(engine)
+    try:
+        service = DailyPriceIngestService(factory, settings)
+        return await service.run(as_of)
+    finally:
+        await engine.dispose()
 
 
 if __name__ == "__main__":
