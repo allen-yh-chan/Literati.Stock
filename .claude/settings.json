@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '## devpro-agent-rules 核心規則已載入\n\n請遵守 AGENTS.md 全部規範。每個 /dp:* command 會先讀取 AGENTS.md 確認行為邊界。\n\n可用 slash commands：\n- /dp:init — 環境初始化（§1）\n- /dp:setup-ci — CI/CD 設定（§1b，一次性）\n- /dp:change <name> — 開始新需求（§2）\n- /dp:pre-pr — PR 前完整檢查（§4+§4b+§4c+§5）\n- /dp:sync-rules — 同步規範（§8）\n\n### 行為邊界速查\n**Always**：先 OpenSpec 後寫碼｜task 有驗收才勾選｜dotnet test 全綠才建 PR\n**Ask First**：任何 git 操作｜新增套件｜改 .csproj/.sln\n**Never**：main 直接實作｜字串拼接 SQL｜query string 傳 PII｜Squash/Rebase merge'"
+          }
+        ]
+      }
+    ]
+  }
+}
