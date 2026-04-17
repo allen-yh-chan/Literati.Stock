@@ -24,6 +24,7 @@ dependencies = [
 
 [project.scripts]
 literati-ingest = "literati_stock.ingest.cli:main"
+literati-signal = "literati_stock.signal.cli:main"
 literati-api    = "literati_stock.api.main:run"
 
 [build-system]
