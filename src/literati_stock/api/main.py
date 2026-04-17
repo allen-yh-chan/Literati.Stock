@@ -13,6 +13,8 @@ from literati_stock.core.settings import Settings
 from literati_stock.ingest.db import build_engine, build_session_factory
 from literati_stock.ingest.scheduler import IngestScheduler
 from literati_stock.price.jobs import register_price_jobs
+from literati_stock.signal.jobs import register_signal_jobs
+from literati_stock.signal.rules.volume_surge_red import VolumeSurgeRedSignal
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -33,6 +35,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.scheduler = scheduler
 
         register_price_jobs(scheduler, session_factory)
+        register_signal_jobs(
+            scheduler,
+            session_factory,
+            signals=[VolumeSurgeRedSignal()],
+        )
 
         scheduler.start()
         logger.info("app.startup", jobs=len(scheduler.jobs))

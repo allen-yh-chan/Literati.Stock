@@ -65,8 +65,8 @@ async def session(db_settings: Settings, alembic_upgraded: None) -> AsyncIterato
     async with factory() as s:
         await s.execute(
             text(
-                "truncate table stock_price, ingest_cursor, ingest_raw, ingest_failure "
-                "restart identity cascade"
+                "truncate table signal_event, stock_price, ingest_cursor, "
+                "ingest_raw, ingest_failure restart identity cascade"
             )
         )
         await s.commit()
