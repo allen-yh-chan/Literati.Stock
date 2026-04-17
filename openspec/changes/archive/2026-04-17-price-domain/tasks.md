@@ -37,5 +37,5 @@
   - 驗收:exit 0
 - [x] **E4. `qa-test-scope.md` 寫入 change 目錄**
   - 驗收:依 template 五段齊全
-- [ ] **E5. archive + push + `gh pr create` target=main**
+- [x] **E5. archive + push + `gh pr create` target=main**
   - 驗收:change 已搬到 `openspec/changes/archive/`;`openspec/specs/price-domain/spec.md` 公佈;PR 描述含 Make-vs-Buy exemption 理由、SQL injection ✓、PII ✓、所有依賴無新增;PR URL 取得
