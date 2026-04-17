@@ -1,0 +1,4 @@
+[submodule ".devpro-agent-rules"]
+	path = .devpro-agent-rules
+	url = https://github.com/devpro-tw/devpro-agent-rules.git
+	branch = production
