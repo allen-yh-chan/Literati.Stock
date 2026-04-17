@@ -39,4 +39,4 @@
 - [x] **F2. `uv run pyright src tests` strict 無 error**
 - [x] **F3. `uv run ruff check` + `ruff format --check` 全綠**
 - [x] **F4. `qa-test-scope.md` 寫入 change 目錄(五段齊全)**
-- [ ] **F5. archive + push + PR(target=main;PR 描述含 Make-vs-Buy exemption 理由、SQL injection ✓、PII ✓、無新增套件)**
+- [x] **F5. archive + push + PR(target=main;PR 描述含 Make-vs-Buy exemption 理由、SQL injection ✓、PII ✓、無新增套件)**
