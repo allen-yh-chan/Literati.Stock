@@ -14,6 +14,7 @@ from literati_stock.core.settings import Settings
 from literati_stock.ingest.clients.finmind import FinMindClient
 from literati_stock.ingest.db import build_engine, build_session_factory
 from literati_stock.ingest.storage import RawPayloadStore
+from literati_stock.price.transform import PriceTransformService, TransformResult
 
 
 async def _run_once(
@@ -55,6 +56,16 @@ async def _run_once(
     return row_id
 
 
+async def _transform_prices(settings: Settings) -> TransformResult:
+    engine = build_engine(settings)
+    session_factory = build_session_factory(engine)
+    try:
+        service = PriceTransformService(session_factory)
+        return await service.process_new()
+    finally:
+        await engine.dispose()
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="literati-ingest")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -64,6 +75,11 @@ def _build_parser() -> argparse.ArgumentParser:
     once.add_argument("--data-id", required=True, help="Stock id or dataset key (e.g. 2330).")
     once.add_argument("--start", required=True, help="Start date YYYY-MM-DD.")
     once.add_argument("--end", default=None, help="End date YYYY-MM-DD (optional).")
+
+    sub.add_parser(
+        "transform-prices",
+        help="Transform pending TaiwanStockPrice ingest_raw rows into stock_price.",
+    )
 
     return parser
 
@@ -85,6 +101,11 @@ def main(argv: list[str] | None = None) -> int:
                 end=args.end,
             )
         )
+        return 0
+
+    if args.command == "transform-prices":
+        result = asyncio.run(_transform_prices(settings))
+        print(result.model_dump_json())
         return 0
 
     parser.print_help()

@@ -11,7 +11,8 @@ from literati_stock.core.settings import Settings
 pytestmark = pytest.mark.integration
 
 
-async def test_healthz_reports_zero_schedules(db_settings: Settings) -> None:
+async def test_healthz_reports_registered_schedules(db_settings: Settings) -> None:
+    """Lifespan registers the price-transform job, so schedules should be ≥ 1."""
     app = create_app(settings=db_settings)
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -19,7 +20,8 @@ async def test_healthz_reports_zero_schedules(db_settings: Settings) -> None:
             response = await client.get("/healthz")
             assert response.status_code == 200
             body = response.json()
-            assert body == {"status": "ok", "schedules": 0}
+            assert body["status"] == "ok"
+            assert body["schedules"] >= 1
 
 
 async def test_lifespan_starts_and_stops_scheduler(db_settings: Settings) -> None:
