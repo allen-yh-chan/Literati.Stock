@@ -4,22 +4,22 @@
 
 ## A. 專案骨架 + 工具鏈
 
-- [ ] **A1. 寫 `pyproject.toml`(project 元資料 + runtime deps + `[dependency-groups]` + 所有 tool 設定區塊)**
+- [x] **A1. 寫 `pyproject.toml`(project 元資料 + runtime deps + `[dependency-groups]` + 所有 tool 設定區塊)**
   - 驗收:`uv sync --no-dev --no-group test --no-group notebook --no-group research` 成功;`uv sync` 含 dev + test;`uv run python -c "import literati_stock"` 不報錯;含 `[tool.pyright]`、`[tool.ruff]`、`[tool.pytest.ini_options]`、`[tool.coverage.*]`、`[tool.uv]`
-- [ ] **A2. 寫 `.python-version`(`3.12`)**
+- [x] **A2. 寫 `.python-version`(`3.12`)**
   - 驗收:`uv run python --version` 顯示 `Python 3.12.x`
-- [ ] **A3. 建 src layout 骨架(`src/literati_stock/{core,ingest,signal,api}/__init__.py`)**
+- [x] **A3. 建 src layout 骨架(`src/literati_stock/{core,ingest,signal,api}/__init__.py`)**
   - 驗收:`uv run python -c "from literati_stock import core, ingest, signal, api"` 不報錯
-- [ ] **A4. `.env.example` 列出所有 env vars(`DATABASE_URL`、`FINMIND_TOKEN`、`LOG_LEVEL`、`LOG_FORMAT`、`SCHEDULER_TIMEZONE`),每個有 inline 註解**
+- [x] **A4. `.env.example` 列出所有 env vars(`DATABASE_URL`、`FINMIND_TOKEN`、`LOG_LEVEL`、`LOG_FORMAT`、`SCHEDULER_TIMEZONE`),每個有 inline 註解**
   - 驗收:檔案存在;`grep -c "^[A-Z_]*=" .env.example` ≥ 5
 - [ ] **A5. `.pre-commit-config.yaml`:ruff + ruff-format + check-toml + check-yaml + trailing-whitespace + check-added-large-files**
   - 驗收:`uv run pre-commit install` 成功;`uv run pre-commit run --all-files` 全綠
 
 ## B. 核心基礎設施
 
-- [ ] **B1. `core/settings.py`:`Settings(BaseSettings)` 從 env + `.env` 載入,frozen,全 typed**
+- [x] **B1. `core/settings.py`:`Settings(BaseSettings)` 從 env + `.env` 載入,frozen,全 typed**
   - 驗收:unit test 驗證:必填欄位 missing 時 `pytest.raises(ValidationError)`;能正確從 `.env.test` 載入;`Settings()` instance 為 immutable(`frozen=True`)
-- [ ] **B2. `core/logging.py`:structlog bootstrap;`LOG_FORMAT=json`(prod)/`console`(dev)兩 mode**
+- [x] **B2. `core/logging.py`:structlog bootstrap;`LOG_FORMAT=json`(prod)/`console`(dev)兩 mode**
   - 驗收:unit test 驗證:`get_logger("x").info("hello", k=1)` json mode 輸出可被 `json.loads` parse 且含 `event`/`level`/`timestamp`/`k` keys;console mode 為 human-readable
 - [ ] **B3. `ingest/db.py`:`create_async_engine` + `async_sessionmaker` factory,connection string 從 Settings**
   - 驗收:integration test 在 testcontainers PG 上 `async with AsyncSessionLocal() as s: await s.execute(text("select 1"))` 取得 1
