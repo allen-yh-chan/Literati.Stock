@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
-from literati_stock.signal.base import PriceRow, SignalEventOut
+from literati_stock.signal.base import SignalEventOut, SignalFeatures
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,9 +27,9 @@ class VolumeSurgeRedSignal:
     min_red_bar_pct: float = 0.015
     min_close_price: Decimal = Decimal("10")
 
-    def evaluate(self, rows: Sequence[PriceRow], as_of: date) -> list[SignalEventOut]:
+    def evaluate(self, features: SignalFeatures, as_of: date) -> list[SignalEventOut]:
         events: list[SignalEventOut] = []
-        for row in rows:
+        for row in features.prices:
             if row.trade_date != as_of:
                 continue
             if row.close < self.min_close_price:

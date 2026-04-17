@@ -14,11 +14,15 @@ from literati_stock.ingest.db import build_engine, build_session_factory
 from literati_stock.notify.channels.discord import DiscordWebhookChannel
 from literati_stock.notify.service import NotificationService
 from literati_stock.signal.base import Signal
+from literati_stock.signal.rules.institutional_chase import (
+    InstitutionalChaseWarningSignal,
+)
 from literati_stock.signal.rules.volume_surge_red import VolumeSurgeRedSignal
 from literati_stock.signal.service import SignalEvaluationService
 
 _SIGNAL_REGISTRY: dict[str, Signal] = {
     "volume_surge_red": VolumeSurgeRedSignal(),
+    "institutional_chase_warning": InstitutionalChaseWarningSignal(),
 }
 
 

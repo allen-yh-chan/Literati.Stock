@@ -1,9 +1,9 @@
-"""Core types for the signal engine: `PriceRow`, `SignalEventOut`, `Signal`."""
+"""Core types for the signal engine: row types, `SignalFeatures`, `Signal`."""
 
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
 from typing import Any, Protocol, runtime_checkable
@@ -13,10 +13,10 @@ from pydantic import BaseModel, ConfigDict
 
 @dataclass(frozen=True, slots=True)
 class PriceRow:
-    """Input row consumed by ``Signal.evaluate``.
+    """One OHLCV row with pre-computed moving-average volume.
 
-    `ma_volume` is ``None`` when there is insufficient history to compute the
-    moving-average; signals MUST handle this case.
+    `ma_volume` is ``None`` when there is insufficient history; signals MUST
+    handle the `None` case explicitly.
     """
 
     stock_id: str
@@ -27,6 +27,44 @@ class PriceRow:
     close: Decimal
     volume: int
     ma_volume: Decimal | None
+
+
+@dataclass(frozen=True, slots=True)
+class InstitutionalRow:
+    """One aggregated institutional buy-sell row for (stock, trade_date)."""
+
+    stock_id: str
+    trade_date: date
+    foreign_net: int
+    trust_net: int
+    dealer_net: int
+    total_net: int
+
+
+@dataclass(frozen=True, slots=True)
+class MarginRow:
+    """One margin / short-sale snapshot row."""
+
+    stock_id: str
+    trade_date: date
+    margin_today_balance: int
+    margin_yesterday_balance: int
+    short_today_balance: int
+    short_yesterday_balance: int
+
+
+@dataclass(frozen=True, slots=True)
+class SignalFeatures:
+    """All input data surfaces a signal may consume.
+
+    Each sequence is pre-filtered to `trade_date <= as_of` by the service
+    layer; missing data defaults to an empty sequence so signals depending
+    only on prices don't need to check for None.
+    """
+
+    prices: Sequence[PriceRow]
+    institutional: Sequence[InstitutionalRow] = field(default_factory=tuple)
+    margin: Sequence[MarginRow] = field(default_factory=tuple)
 
 
 class SignalEventOut(BaseModel):
@@ -45,14 +83,13 @@ class SignalEventOut(BaseModel):
 class Signal(Protocol):
     """Structural type for a signal rule.
 
-    Implementations MUST be pure with respect to `(rows, as_of)` — no hidden
-    I/O, no future-row access. `window_days` is the historical window size the
-    signal depends on; the service uses it to parameterise the SQL window fn.
+    Implementations MUST be pure with respect to `(features, as_of)` — no
+    hidden I/O, no future-row access. `window_days` is the historical window
+    size the signal depends on; the service uses it to drive SQL window
+    functions and row selection.
 
     Both `name` and `window_days` are expressed as read-only properties so
-    frozen dataclass implementations satisfy the protocol (the default-field
-    form on a frozen dataclass is read-only, which Pyright flags as
-    incompatible with a writable attribute on Protocol).
+    frozen dataclass implementations satisfy the protocol.
     """
 
     @property
@@ -61,4 +98,4 @@ class Signal(Protocol):
     @property
     def window_days(self) -> int: ...
 
-    def evaluate(self, rows: Sequence[PriceRow], as_of: date) -> list[SignalEventOut]: ...
+    def evaluate(self, features: SignalFeatures, as_of: date) -> list[SignalEventOut]: ...

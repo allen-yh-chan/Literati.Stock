@@ -8,6 +8,7 @@ from typing import Any
 
 from fastapi import FastAPI
 
+from literati_stock.chip.jobs import register_chip_jobs
 from literati_stock.core.logging import configure_logging, get_logger
 from literati_stock.core.settings import Settings
 from literati_stock.ingest.db import build_engine, build_session_factory
@@ -16,6 +17,9 @@ from literati_stock.notify.channels.discord import DiscordWebhookChannel
 from literati_stock.notify.jobs import register_notification_jobs
 from literati_stock.price.jobs import register_price_jobs
 from literati_stock.signal.jobs import register_signal_jobs
+from literati_stock.signal.rules.institutional_chase import (
+    InstitutionalChaseWarningSignal,
+)
 from literati_stock.signal.rules.volume_surge_red import VolumeSurgeRedSignal
 from literati_stock.universe.jobs import register_universe_jobs
 
@@ -43,9 +47,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         register_signal_jobs(
             scheduler,
             session_factory,
-            signals=[VolumeSurgeRedSignal()],
+            signals=[VolumeSurgeRedSignal(), InstitutionalChaseWarningSignal()],
         )
         register_universe_jobs(scheduler, session_factory, s)
+        register_chip_jobs(scheduler, session_factory, s)
         if s.discord_webhook_url:
             notification_channel = DiscordWebhookChannel(s.discord_webhook_url)
             register_notification_jobs(

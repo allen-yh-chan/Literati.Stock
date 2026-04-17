@@ -1,4 +1,4 @@
-"""Daily scheduled price ingest: iterate watchlist, fetch FinMind, record."""
+"""Daily scheduled dataset ingest: iterate watchlist, fetch FinMind, record."""
 
 from __future__ import annotations
 
@@ -18,37 +18,42 @@ from literati_stock.universe.models import StockUniverse
 
 logger = structlog.get_logger(__name__)
 
-_DATASET = "TaiwanStockPrice"
-
 
 class DailyPriceIngestResult(BaseModel):
-    """Summary returned by `DailyPriceIngestService.run`."""
+    """Summary returned by `DailyWatchlistIngestService.run`."""
 
     model_config = ConfigDict(frozen=True)
 
+    dataset: str
     trade_date: date
     stocks_attempted: int
     raw_rows_written: int
     failures_recorded: int
 
 
-class DailyPriceIngestService:
-    """Reads `stock_universe WHERE is_active AND in_watchlist`, fetches
-    TaiwanStockPrice for the given date per stock, and records to
+class DailyWatchlistIngestService:
+    """Reads `stock_universe WHERE is_active AND in_watchlist`, fetches a
+    given FinMind dataset for `trade_date` per stock, and records to
     `ingest_raw` / `ingest_failure`. One `AsyncLimiter` shared across the
-    loop so the FinMind quota is respected."""
+    loop so the FinMind quota is respected.
+
+    `dataset` is the FinMind dataset name (e.g. `TaiwanStockPrice`,
+    `TaiwanStockInstitutionalInvestorsBuySell`, `TaiwanStockMarginPurchaseShortSale`).
+    """
 
     def __init__(
         self,
         session_factory: async_sessionmaker[AsyncSession],
         settings: Settings,
         *,
+        dataset: str,
         retry_wait_initial: float = 2.0,
         retry_wait_max: float = 60.0,
         max_attempts: int = 5,
     ) -> None:
         self._sf = session_factory
         self._settings = settings
+        self._dataset = dataset
         self._retry_wait_initial = retry_wait_initial
         self._retry_wait_max = retry_wait_max
         self._max_attempts = max_attempts
@@ -57,11 +62,13 @@ class DailyPriceIngestService:
         watchlist = await self._load_watchlist()
         logger.info(
             "daily_ingest.start",
+            dataset=self._dataset,
             trade_date=trade_date.isoformat(),
             watchlist_size=len(watchlist),
         )
         if not watchlist:
             return DailyPriceIngestResult(
+                dataset=self._dataset,
                 trade_date=trade_date,
                 stocks_attempted=0,
                 raw_rows_written=0,
@@ -88,7 +95,7 @@ class DailyPriceIngestService:
                 }
                 try:
                     rows = await client.fetch(
-                        _DATASET,
+                        self._dataset,
                         data_id=stock_id,
                         start_date=trade_date.isoformat(),
                         end_date=trade_date.isoformat(),
@@ -105,6 +112,7 @@ class DailyPriceIngestService:
                 raw_written += 1
 
         result = DailyPriceIngestResult(
+            dataset=self._dataset,
             trade_date=trade_date,
             stocks_attempted=len(watchlist),
             raw_rows_written=raw_written,
@@ -126,7 +134,7 @@ class DailyPriceIngestService:
     async def _record_raw(self, *, request_args: dict[str, object], payload: object) -> None:
         async with self._sf() as session, session.begin():
             store = RawPayloadStore(session)
-            await store.record(dataset=_DATASET, request_args=request_args, payload=payload)
+            await store.record(dataset=self._dataset, request_args=request_args, payload=payload)
 
     async def _record_failure(
         self,
@@ -138,8 +146,30 @@ class DailyPriceIngestService:
         async with self._sf() as session, session.begin():
             recorder = FailureRecorder(session)
             await recorder.record(
-                dataset=_DATASET,
+                dataset=self._dataset,
                 request_args=request_args,
                 exc=exc,
                 attempts=attempts,
             )
+
+
+class DailyPriceIngestService(DailyWatchlistIngestService):
+    """Back-compat convenience: TaiwanStockPrice-specific instantiation."""
+
+    def __init__(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        settings: Settings,
+        *,
+        retry_wait_initial: float = 2.0,
+        retry_wait_max: float = 60.0,
+        max_attempts: int = 5,
+    ) -> None:
+        super().__init__(
+            session_factory,
+            settings,
+            dataset="TaiwanStockPrice",
+            retry_wait_initial=retry_wait_initial,
+            retry_wait_max=retry_wait_max,
+            max_attempts=max_attempts,
+        )
