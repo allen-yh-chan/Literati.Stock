@@ -17,6 +17,7 @@ from literati_stock.notify.jobs import register_notification_jobs
 from literati_stock.price.jobs import register_price_jobs
 from literati_stock.signal.jobs import register_signal_jobs
 from literati_stock.signal.rules.volume_surge_red import VolumeSurgeRedSignal
+from literati_stock.universe.jobs import register_universe_jobs
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -44,6 +45,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             session_factory,
             signals=[VolumeSurgeRedSignal()],
         )
+        register_universe_jobs(scheduler, session_factory, s)
         if s.discord_webhook_url:
             notification_channel = DiscordWebhookChannel(s.discord_webhook_url)
             register_notification_jobs(
