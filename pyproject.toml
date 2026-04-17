@@ -1,0 +1,124 @@
+[project]
+name = "literati-stock"
+version = "0.1.0"
+description = "Taiwan equity volume-price analysis system"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+authors = [{ name = "Allen Chan", email = "allenchan.x@gmail.com" }]
+license = { text = "Proprietary" }
+
+dependencies = [
+  "pydantic>=2.9",
+  "pydantic-settings>=2.6",
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.32",
+  "sqlalchemy[asyncio]>=2.0",
+  "asyncpg>=0.30",
+  "alembic>=1.14",
+  "httpx>=0.28",
+  "tenacity>=9.0",
+  "structlog>=24.4",
+  "aiolimiter>=1.2",
+  "apscheduler>=3.10,<4",
+]
+
+[project.scripts]
+literati-ingest = "literati_stock.ingest.cli:main"
+literati-api    = "literati_stock.api.main:run"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/literati_stock"]
+
+[dependency-groups]
+dev = [
+  "ruff>=0.8",
+  "pyright>=1.1.390",
+  "pre-commit>=4.0",
+  "ipython>=8.30",
+]
+test = [
+  "pytest>=8.3",
+  "pytest-cov>=6.0",
+  "pytest-asyncio>=0.24",
+  "pytest-mock>=3.14",
+  "testcontainers[postgres]>=4.9",
+  "freezegun>=1.5",
+  "respx>=0.22",
+]
+
+[tool.uv]
+default-groups = ["dev", "test"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["literati_stock"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pyright]
+include = ["src", "tests"]
+exclude = ["**/__pycache__", ".venv", "migrations/versions"]
+pythonVersion = "3.12"
+pythonPlatform = "Linux"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+reportUnknownMemberType = "warning"
+reportUnknownVariableType = "warning"
+reportUnknownArgumentType = "warning"
+reportUnknownLambdaType = "warning"
+
+[[tool.pyright.executionEnvironments]]
+root = "tests"
+reportPrivateUsage = "none"
+reportUnknownMemberType = "none"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = [
+  "-ra",
+  "--strict-markers",
+  "--strict-config",
+]
+markers = [
+  "slow: tests that hit external APIs",
+  "integration: end-to-end tests requiring DB / containers",
+  "unit: fast pure-function tests",
+]
+asyncio_mode = "auto"
+filterwarnings = [
+  "error",
+  "ignore::DeprecationWarning:apscheduler.*",
+]
+
+[tool.coverage.run]
+source = ["src/literati_stock"]
+branch = true
+omit = ["*/__main__.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "raise NotImplementedError",
+  "if TYPE_CHECKING:",
+  "\\.\\.\\.",
+]
+show_missing = true
+fail_under = 75

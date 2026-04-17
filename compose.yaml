@@ -1,0 +1,47 @@
+services:
+  app:
+    build: .
+    image: literati-stock:dev
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://literati:literati@postgres:5432/literati_stock
+      FINMIND_TOKEN: ${FINMIND_TOKEN:-}
+      LOG_FORMAT: json
+      LOG_LEVEL: INFO
+      SCHEDULER_TIMEZONE: Asia/Taipei
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Run migrations then start the API (keeps single-command dev UX).
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn literati_stock.api.main:create_app
+             --factory --host 0.0.0.0 --port 8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; urllib.request.urlopen('http://localhost:8000/healthz', timeout=2).read()"
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: literati
+      POSTGRES_PASSWORD: literati
+      POSTGRES_DB: literati_stock
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U literati -d literati_stock"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
