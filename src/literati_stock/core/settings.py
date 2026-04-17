@@ -37,3 +37,10 @@ class Settings(BaseSettings):
     log_level: LogLevel = Field(default="INFO")
     log_format: LogFormat = Field(default="console")
     scheduler_timezone: str = Field(default="Asia/Taipei")
+    discord_webhook_url: str = Field(
+        default="",
+        description=(
+            "Discord webhook URL for signal notifications. Empty string = "
+            "no-op (dev mode). Treated as a secret; never logged with path/token."
+        ),
+    )

@@ -27,6 +27,11 @@ def configure_logging(settings: Settings) -> None:
         force=True,
     )
 
+    # Quiet third-party request loggers that dump full URLs (including tokens
+    # like the Discord webhook secret) at INFO level by default.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+
     shared_processors: list[Processor] = [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_log_level,
