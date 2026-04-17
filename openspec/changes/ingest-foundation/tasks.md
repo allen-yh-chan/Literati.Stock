@@ -12,7 +12,7 @@
   - 驗收:`uv run python -c "from literati_stock import core, ingest, signal, api"` 不報錯
 - [x] **A4. `.env.example` 列出所有 env vars(`DATABASE_URL`、`FINMIND_TOKEN`、`LOG_LEVEL`、`LOG_FORMAT`、`SCHEDULER_TIMEZONE`),每個有 inline 註解**
   - 驗收:檔案存在;`grep -c "^[A-Z_]*=" .env.example` ≥ 5
-- [ ] **A5. `.pre-commit-config.yaml`:ruff + ruff-format + check-toml + check-yaml + trailing-whitespace + check-added-large-files**
+- [x] **A5. `.pre-commit-config.yaml`:ruff + ruff-format + check-toml + check-yaml + trailing-whitespace + check-added-large-files**
   - 驗收:`uv run pre-commit install` 成功;`uv run pre-commit run --all-files` 全綠
 
 ## B. 核心基礎設施
@@ -76,13 +76,13 @@
 
 ## K. QA 與收尾
 
-- [ ] **K1. 跑專案約定測試指令 `uv run pytest --cov=literati_stock --cov-fail-under=75` 全綠**
+- [x] **K1. 跑專案約定測試指令 `uv run pytest --cov=literati_stock --cov-fail-under=75` 全綠**
   - 驗收:exit 0;coverage report 顯示總 ≥ 75%
-- [ ] **K2. `uv run pyright src tests` strict 無 error**
+- [x] **K2. `uv run pyright src tests` strict 無 error**
   - 驗收:exit 0;允許 `# pyright: reportUnknownMemberType=false` 僅出現於 `src/literati_stock/ingest/clients/finmind.py`(adapter layer 唯一豁免處)
-- [ ] **K3. `uv run ruff check src tests` 與 `uv run ruff format --check src tests` 全綠**
+- [x] **K3. `uv run ruff check src tests` 與 `uv run ruff format --check src tests` 全綠**
   - 驗收:exit 0
-- [ ] **K4. 寫 `qa-test-scope.md`(依 `testing-and-qa.md` 模板)**
+- [x] **K4. 寫 `qa-test-scope.md`(依 `testing-and-qa.md` 模板)**
   - 驗收:含「測試目標、覆蓋情境、未覆蓋風險、執行指令、結果」五段;放在 `openspec/changes/ingest-foundation/qa-test-scope.md`
 - [ ] **K5. `/opsx:archive ingest-foundation`,git push,`gh pr create`(target=main)**
   - 驗收:`openspec/changes/ingest-foundation/` 已搬到 `openspec/changes/archive/<timestamp>-ingest-foundation/`(或同等);PR 描述含「Make-vs-Buy 結論」「License 表」「SQL injection 已檢查:N/A or 已用 parameterised query」「PII 已檢查:無 PII(公開市場資料)」「Docker compose up 結果」;PR URL 取得
