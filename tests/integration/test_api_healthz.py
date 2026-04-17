@@ -23,9 +23,11 @@ async def test_healthz_without_webhook_has_two_schedules(
             assert response.status_code == 200
             body = response.json()
             assert body["status"] == "ok"
-            assert (
-                body["schedules"] == 4
-            )  # price_transform + signal + universe_sync + price_ingest_daily
+            # 8 scheduled jobs without webhook:
+            # price_transform, signal_evaluation, universe_sync,
+            # price_ingest_daily, chip_ingest_institutional,
+            # chip_ingest_margin, institutional_transform, margin_transform
+            assert body["schedules"] == 8
 
 
 async def test_healthz_with_webhook_has_three_schedules(
@@ -42,7 +44,7 @@ async def test_healthz_with_webhook_has_three_schedules(
             response = await client.get("/healthz")
             assert response.status_code == 200
             body = response.json()
-            assert body["schedules"] == 5  # adds notification_dispatch
+            assert body["schedules"] == 9  # previous 8 + notification_dispatch
 
 
 async def test_lifespan_starts_and_stops_scheduler(db_settings: Settings) -> None:

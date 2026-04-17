@@ -61,6 +61,21 @@ class TaiwanStockInfoRow(_FinMindRow):
     type: str  # market: twse / tpex / emerging
 
 
+class TaiwanStockMarginPurchaseShortSaleRow(_FinMindRow):
+    """Row shape for dataset ``TaiwanStockMarginPurchaseShortSale`` (融資融券)."""
+
+    date: date
+    stock_id: str = Field(min_length=4)
+    MarginPurchaseBuy: int
+    MarginPurchaseSell: int
+    MarginPurchaseTodayBalance: int
+    MarginPurchaseYesterdayBalance: int
+    ShortSaleBuy: int
+    ShortSaleSell: int
+    ShortSaleTodayBalance: int
+    ShortSaleYesterdayBalance: int
+
+
 # Dataset → expected top-level field set. Consumed by `SchemaSentinel`.
 EXPECTED_FIELDS: dict[str, frozenset[str]] = {
     "TaiwanStockPrice": frozenset(
@@ -81,4 +96,18 @@ EXPECTED_FIELDS: dict[str, frozenset[str]] = {
         {"date", "stock_id", "buy", "sell", "name"}
     ),
     "TaiwanStockInfo": frozenset({"date", "stock_id", "stock_name", "industry_category", "type"}),
+    "TaiwanStockMarginPurchaseShortSale": frozenset(
+        {
+            "date",
+            "stock_id",
+            "MarginPurchaseBuy",
+            "MarginPurchaseSell",
+            "MarginPurchaseTodayBalance",
+            "MarginPurchaseYesterdayBalance",
+            "ShortSaleBuy",
+            "ShortSaleSell",
+            "ShortSaleTodayBalance",
+            "ShortSaleYesterdayBalance",
+        }
+    ),
 }
