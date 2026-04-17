@@ -11,6 +11,8 @@ from zoneinfo import ZoneInfo
 from literati_stock.core.logging import configure_logging
 from literati_stock.core.settings import Settings
 from literati_stock.ingest.db import build_engine, build_session_factory
+from literati_stock.notify.channels.discord import DiscordWebhookChannel
+from literati_stock.notify.service import NotificationService
 from literati_stock.signal.base import Signal
 from literati_stock.signal.rules.volume_surge_red import VolumeSurgeRedSignal
 from literati_stock.signal.service import SignalEvaluationService
@@ -95,6 +97,16 @@ def _build_parser() -> argparse.ArgumentParser:
         help="End date YYYY-MM-DD (defaults to today in Asia/Taipei).",
     )
 
+    nt = sub.add_parser(
+        "notify",
+        help="Post today's (or --as-of) events to the configured channel.",
+    )
+    nt.add_argument(
+        "--as-of",
+        default=None,
+        help="Date (YYYY-MM-DD). Defaults to today in Asia/Taipei.",
+    )
+
     return parser
 
 
@@ -120,8 +132,39 @@ def main(argv: list[str] | None = None) -> int:
         asyncio.run(_backfill(settings, args.name, start, end))
         return 0
 
+    if args.command == "notify":
+        as_of = _parse_date(args.as_of) if args.as_of else _today_taipei()
+        asyncio.run(_notify(settings, as_of))
+        return 0
+
     parser.print_help()
     return 2
+
+
+async def _notify(settings: Settings, as_of: date) -> None:
+    if not settings.discord_webhook_url:
+        print(json.dumps({"error": "DISCORD_WEBHOOK_URL not set; nothing to do."}))
+        return
+
+    engine = build_engine(settings)
+    factory = build_session_factory(engine)
+    channel = DiscordWebhookChannel(settings.discord_webhook_url)
+    signal_names = list(_SIGNAL_REGISTRY.keys())
+    try:
+        service = NotificationService(factory, channel, signal_names)
+        total = await service.publish_daily(as_of)
+    finally:
+        await channel.aclose()
+        await engine.dispose()
+    print(
+        json.dumps(
+            {
+                "as_of": as_of.isoformat(),
+                "signals_checked": signal_names,
+                "events_dispatched": total,
+            }
+        )
+    )
 
 
 if __name__ == "__main__":
