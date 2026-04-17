@@ -183,3 +183,23 @@
 2. ✅ 範圍僅含運維表(`ingest_raw` + `ingest_failure`),domain table 延後另開 change
 3. ✅ License 全綠;hypothesis 暫不引入
 4. ✅ Runtime = Docker Desktop(Dockerfile + compose.yaml + .dockerignore)
+
+## 實作階段發現的修正(2026-04-17,FinMind SDK 降級為直接 REST)
+
+原規劃使用 `finmind>=1.8` SDK 包裝。實作前 smoke test 發現:
+
+- FinMind SDK v1.9.7 **未顯式宣告 `tqdm` 依賴**(`ModuleNotFoundError: No module named 'tqdm'`),需要使用者手動補裝
+- `tqdm` 授權為 **MPL-2.0 AND MIT** dual license,與 `hypothesis` 同樣屬非標準允許清單,引入需額外核准
+- SDK 頂層 `__init__.py` 強制 import `strategies`(backtest)、`crawler`、`schema`,對只需要資料讀取的 ingest 層是負擔
+- SDK 的 HTTP 呼叫是 `requests`(sync),須 `asyncio.to_thread` 包裝才能與 `aiolimiter`(async)搭配,增加 overhead 且模糊 cancellation 語意
+
+**修正決議**:改用 `httpx` 直接對 FinMind REST API(`https://api.finmindtrade.com/api/v4/data`)發 GET。優點:
+- 純 async、與 `aiolimiter`/`tenacity` 自然搭配
+- 零額外 deps(`httpx` 已在 runtime deps)
+- 避開 tqdm license 爭議
+- 免除 SDK 冗餘 import
+
+**影響**:
+- `pyproject.toml` 移除 `finmind>=1.8`
+- Spec 不變(原本寫的就是「對 FinMind API」,未指定 SDK 或 REST)
+- FinMindClient 內手刻 ~30 行 HTTP 呼叫 + JSON 解析;仍在豁免門檻下(<50 行 utility)

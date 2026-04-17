@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 import pytest_asyncio
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from testcontainers.postgres import PostgresContainer
 
@@ -53,10 +54,17 @@ def alembic_upgraded(db_settings: Settings) -> None:
 
 @pytest_asyncio.fixture
 async def session(db_settings: Settings, alembic_upgraded: None) -> AsyncIterator[AsyncSession]:
-    """Per-test async session bound to the migrated test database."""
+    """Per-test async session bound to the migrated test database.
+
+    Truncates the ingest data tables before each test to isolate tests from
+    rows committed by sibling tests (e.g. the CLI integration test commits
+    via its own session). Read-only tests are unaffected.
+    """
     engine = build_engine(db_settings)
     factory = build_session_factory(engine)
     async with factory() as s:
+        await s.execute(text("truncate table ingest_raw, ingest_failure restart identity"))
+        await s.commit()
         yield s
         await s.rollback()
     await engine.dispose()

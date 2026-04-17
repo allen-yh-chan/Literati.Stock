@@ -33,33 +33,33 @@
 
 ## D. FinMind client(限速 + 重試)
 
-- [ ] **D1. `ingest/schemas/finmind_raw.py`:`TaiwanStockPriceRow`(欄位名保留 SDK 原文)Pydantic v2 model with `model_config = ConfigDict(extra='allow', frozen=True)`**
+- [x] **D1. `ingest/schemas/finmind_raw.py`:`TaiwanStockPriceRow`(欄位名保留 SDK 原文)Pydantic v2 model with `model_config = ConfigDict(extra='allow', frozen=True)`**
   - 驗收:unit test 驗證:對 README 範例 payload `model_validate` 成功;missing `stock_id` 時 raise `ValidationError`;傳入額外欄位 `foo='bar'` 後 `.__pydantic_extra__["foo"] == "bar"`
-- [ ] **D2. `ingest/clients/finmind.py`:`FinMindClient` 注入 `AsyncLimiter` + `tenacity` decorator + structlog;exposed `async fetch(dataset, **params)`**
+- [x] **D2. `ingest/clients/finmind.py`:`FinMindClient` 注入 `AsyncLimiter` + `tenacity` decorator + structlog;exposed `async fetch(dataset, **params)`**
   - 驗收:unit test 用 `respx`(已加 dev dep)mock FinMind base URL,驗證:(a) 在 `max_rate=8, time_period=60` 下,連續 16 calls 平均 throughput ≤ 9/min;(b) 429 response 觸發 `wait_exponential_jitter` 退避 + 最多 5 次嘗試;(c) 5 次後 raise `FinMindRateLimitError`
   - **SQL 檢查**:無 DB 操作;**PII 檢查**:純市場資料 endpoint,無個資
 
 ## E. Schema sentinel
 
-- [ ] **E1. `ingest/sentinel.py`:`SchemaSentinel.check(dataset, sample_args)`,抓一筆樣本後 assert keys == 預期常數**
+- [x] **E1. `ingest/sentinel.py`:`SchemaSentinel.check(dataset, sample_args)`,抓一筆樣本後 assert keys == 預期常數**
   - 驗收:unit test 用 mock client 驗證:(a) keys == 預期 → return None;(b) keys != 預期 → raise `SchemaDriftError(added: set, removed: set)`;預期欄位常數宣告於模組頂部 `EXPECTED_FIELDS: dict[str, frozenset[str]]`
 
 ## F. DLQ writer
 
-- [ ] **F1. `ingest/storage.py`:`RawPayloadStore.record(dataset, request_args, payload)` 與 `FailureRecorder.record(dataset, request_args, exc, attempts)`**
+- [x] **F1. `ingest/storage.py`:`RawPayloadStore.record(dataset, request_args, payload)` 與 `FailureRecorder.record(dataset, request_args, exc, attempts)`**
   - 驗收:integration test(testcontainers PG)驗證:(a) 成功 ingest 寫入 1 筆 `ingest_raw`、0 筆 `ingest_failure`;(b) 失敗 ingest 寫入 0 筆 raw、1 筆 failure 且 `traceback` 欄位非空、`attempts` 欄位等於實際嘗試次數
   - **SQL 檢查**:全部用 `pg_insert(...).values(...)` parameterised,grep `f".*select|insert"` 無命中;**PII 檢查**:同 D2
 
 ## G. Scheduler
 
-- [ ] **G1. `ingest/scheduler.py`:`IngestScheduler` 包 `AsyncIOScheduler`,提供 `add_job(func, trigger, job_id)`、`start()`、`shutdown(wait=True)`,默認 `timezone='Asia/Taipei'`、`misfire_grace_time=600`、`coalesce=True`、`max_instances=1`**
+- [x] **G1. `ingest/scheduler.py`:`IngestScheduler` 包 `AsyncIOScheduler`,提供 `add_job(func, trigger, job_id)`、`start()`、`shutdown(wait=True)`,默認 `timezone='Asia/Taipei'`、`misfire_grace_time=600`、`coalesce=True`、`max_instances=1`**
   - 驗收:unit test 驗證:`add_job` 後 `get_jobs()` 含 job_id;options 預設值 introspect 正確;timezone 為 Asia/Taipei
 
 ## H. FastAPI app + CLI
 
-- [ ] **H1. `api/main.py`:`FastAPI(lifespan=...)`;lifespan 啟動 `IngestScheduler` + DB pool warmup;`/healthz` endpoint 回 `{status: "ok", schedules: N}`**
+- [x] **H1. `api/main.py`:`FastAPI(lifespan=...)`;lifespan 啟動 `IngestScheduler` + DB pool warmup;`/healthz` endpoint 回 `{status: "ok", schedules: N}`**
   - 驗收:`uv run uvicorn literati_stock.api.main:app` 啟動;`curl localhost:8000/healthz` 200 + JSON 含 `status` 與 `schedules`;unit test 用 `httpx.AsyncClient(transport=ASGITransport(app=app))` 驗證 lifespan startup/shutdown 各被呼叫一次
-- [ ] **H2. `ingest/cli.py`:`literati-ingest` CLI(typer 或純 argparse,我選 argparse 避免新依賴);子指令 `run-once <dataset> --start <date> --end <date>`**
+- [x] **H2. `ingest/cli.py`:`literati-ingest` CLI(typer 或純 argparse,我選 argparse 避免新依賴);子指令 `run-once <dataset> --start <date> --end <date>`**
   - 驗收:`uv run literati-ingest --help` 顯示子指令;integration test 用 mock FinMind 跑 `run-once TaiwanStockPrice --start 2025-01-02 --end 2025-01-02` 後 `ingest_raw` 表新增 1 筆
 
 ## I. 測試環境

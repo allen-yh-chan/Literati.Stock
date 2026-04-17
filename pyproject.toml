@@ -20,8 +20,6 @@ dependencies = [
   "structlog>=24.4",
   "aiolimiter>=1.2",
   "apscheduler>=3.10,<4",
-  "finmind>=1.8",
-  "pandas>=2.2",
 ]
 
 [project.scripts]
