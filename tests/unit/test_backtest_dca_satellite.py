@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 from dataclasses import replace
 from datetime import date, timedelta
+from pathlib import Path
 
 import pytest
 
@@ -252,3 +253,51 @@ def test_default_params_are_the_pre_registered_values() -> None:
 def test_xirr_returns_nan_when_no_root_is_bracketed() -> None:
     day = date(2024, 1, 1)
     assert math.isnan(xirr([(day, -100.0), (day, 50.0)]))
+
+
+# --- review round 1 (F1/F3) ---------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "flows",
+    [
+        [(date(2024, 1, 1), -100.0), (date(2024, 1, 1), 100.0)],
+        [(date(2024, 1, 1), 0.0)],
+        [(date(2024, 1, 1), -100.0), (date(2025, 1, 1), 0.0)],
+    ],
+)
+def test_xirr_is_undefined_for_degenerate_cashflows(flows: list[tuple[date, float]]) -> None:
+    assert math.isnan(xirr(flows))
+
+
+def test_report_discloses_same_close_execution_assumption() -> None:
+    report = render_report(run_backtest(_c_path(), FREE), FREE, _c_path())
+    assert "同日收盤成交" in report
+
+
+@pytest.mark.parametrize("closes", [[], [100.0]])
+async def test_loader_rejects_insufficient_data_with_clear_message(
+    closes: list[float], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import literati_stock.backtest.dca_satellite as module
+    from literati_stock.backtest.data import RawMarketRows
+
+    async def fake_fetch(*_args: object, **_kwargs: object) -> RawMarketRows:
+        prices = [{"date": "2003-06-30", "close": c} for c in closes]
+        return RawMarketRows(prices=prices, dividends=[], splits=[])
+
+    monkeypatch.setattr(module, "fetch_raw_rows", fake_fetch)
+    with pytest.raises(ValueError, match="at least 2 price bars"):
+        await module._load(date(2003, 6, 30), tmp_path, refresh=False)
+
+
+def test_cli_turns_data_errors_into_clean_exit(monkeypatch: pytest.MonkeyPatch) -> None:
+    import literati_stock.backtest.dca_satellite as module
+
+    def fake_run(coro: object) -> None:
+        coro.close()  # type: ignore[attr-defined]
+        raise ValueError("need at least 2 price bars to backtest, got 0")
+
+    monkeypatch.setattr(module.asyncio, "run", fake_run)
+    with pytest.raises(SystemExit, match="cannot backtest 0050 up to 2003-06-30"):
+        module.main(["--end-date", "2003-06-30"])

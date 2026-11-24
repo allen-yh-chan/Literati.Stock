@@ -35,7 +35,9 @@ Mechanics (shared)
       holds the shares (buy fee applies). Splits multiply share counts.
     - Satellite cash earns 1.5% p.a., compounded per calendar day.
     - Signals use a total-return index (split- and dividend-adjusted,
-      multiplicative only); trades execute at the raw same-day close.
+      multiplicative only); trades execute at the raw same-day close. This
+      is an idealisation (the close is not known when the order is placed);
+      the report states it, and results must be read with it in mind.
 
 Metrics
     XIRR on contributions (negative) and final value (positive); max drawdown
@@ -169,10 +171,15 @@ def total_return_index(data: MarketData) -> list[float]:
 def xirr(cashflows: Sequence[tuple[date, float]]) -> float:
     """Annualised internal rate of return via bisection on (-99%, 1000%).
 
-    Returns ``nan`` when no root is bracketed (e.g. horizons of a few days,
-    where annualisation explodes); the report shows it as-is.
+    Returns ``nan`` when the rate is undefined: all flows on one day, no
+    flow of each sign, or no root bracketed (e.g. horizons of a few days,
+    where annualisation explodes). The report shows it as-is.
     """
     t0 = cashflows[0][0]
+    if all(d == t0 for d, _ in cashflows):
+        return math.nan
+    if not any(cf < 0 for _, cf in cashflows) or not any(cf > 0 for _, cf in cashflows):
+        return math.nan
 
     def npv(rate: float) -> float:
         return sum(cf / (1.0 + rate) ** ((d - t0).days / 365.0) for d, cf in cashflows)
@@ -314,6 +321,7 @@ def render_report(results: dict[Strategy, Result], params: Params, data: MarketD
         f"手續費 {params.buy_fee_rate:.4%}／證交稅 {params.sell_tax_rate:.1%}；"
         f"現金利率 {params.cash_annual_rate:.1%}",
         f"對照：0050 單筆含息持有 {tr[-1] / tr[0]:.2f} 倍，年化 {lump_cagr:.2%}",
+        "成交假設：B／C 以訊號當日同日收盤成交（理想化；實際下單時尚不知收盤價）",
         "",
         "| 策略 | 說明 | XIRR 年化 | 最大回檔 | 訊號交易 | 總交易成本 | 總投入 | 期末市值 |",
         "|---|---|---:|---:|---:|---:|---:|---:|",
@@ -343,7 +351,9 @@ async def _load(end: date, cache_dir: Path, refresh: bool) -> MarketData:
         async with FinMindClient(token, AsyncLimiter(8, 60)) as client:
             return await fetch_raw_rows(client, STOCK_ID, DATA_START, end)
 
-    raw = await load_or_fetch(cache_dir, STOCK_ID, end, fetcher, refresh=refresh)
+    raw = await load_or_fetch(
+        cache_dir, STOCK_ID, end, fetcher, refresh=refresh, today=_today_taipei()
+    )
     return parse_market_data(raw)
 
 
@@ -353,7 +363,10 @@ def main(argv: Sequence[str] | None = None) -> None:
     parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR)
     parser.add_argument("--refresh", action="store_true", help="ignore cached data")
     args = parser.parse_args(argv)
-    data = asyncio.run(_load(args.end_date, args.cache_dir, args.refresh))
+    try:
+        data = asyncio.run(_load(args.end_date, args.cache_dir, args.refresh))
+    except ValueError as exc:
+        raise SystemExit(f"cannot backtest {STOCK_ID} up to {args.end_date}: {exc}") from exc
     print(render_report(run_backtest(data, DEFAULT_PARAMS), DEFAULT_PARAMS, data))
 
 
