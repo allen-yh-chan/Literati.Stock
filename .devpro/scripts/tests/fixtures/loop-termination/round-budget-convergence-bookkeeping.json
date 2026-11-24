@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "description": "D11 (b) round 24->25 convergence: a PR is already at the pr-sticky lane cap (round_count == PR_STICKY_REVIEW_ROUND_CAP) with every outstanding finding classified change-folder-bookkeeping. A fresh initial/focused-sticky-refresh dispatch without a DEVPRO_REVIEW_ROUND_OVERRIDE MUST still fail closed with review_round_budget_exhausted (the cap is dispatch-count based, not finding-content based); the R6 convergence predicate governs the REVIEWER's verdict on an authorized round, not whether a round may be dispatched at all.",
+    "sha_provenance": "placeholder — form-equivalent value, not a real PR #2407 commit sequence. See ./README.md.",
+    "pii": "none"
+  },
+  "sidecar": {
+    "round_count": 3,
+    "pr_number": "2407"
+  },
+  "handoff": {
+    "mode": "pr-sticky",
+    "attempt": "initial",
+    "review_scope": "full-pr"
+  },
+  "findings": [
+    { "carrier_class": "change-folder-bookkeeping" }
+  ]
+}

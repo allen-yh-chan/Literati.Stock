@@ -1,0 +1,14 @@
+{
+  "name": "devpro",
+  "description": "Devpro first-party agent skills (devpro:<name>).",
+  "skills": [
+    "./consumer",
+    "./devops",
+    "./devpro-reviews",
+    "./devpro-workflows",
+    "./openspec",
+    "./release",
+    "./rules-authoring",
+    "./security"
+  ]
+}

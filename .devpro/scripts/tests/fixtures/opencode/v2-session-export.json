@@ -1,0 +1,82 @@
+{
+  "info": {
+    "id": "ses_eb5000658ffeEpZCzkI0yl09SK",
+    "projectID": "f210f8abada2f89be48b7cfc6a9076041dfce728",
+    "model": {
+      "id": "deepseek-v4-pro",
+      "providerID": "deepseek",
+      "variant": "default"
+    },
+    "cost": 0.0024166120000000003,
+    "tokens": {
+      "input": 3510,
+      "output": 5,
+      "reasoning": 0,
+      "cache": {
+        "read": 4096,
+        "write": 0
+      }
+    },
+    "outcome": "succeeded",
+    "time": {
+      "created": 1792259652153,
+      "updated": 1792259652238,
+      "idle": 1792259653337
+    },
+    "location": {
+      "directory": "/neutral-cwd"
+    }
+  },
+  "messages": [
+    {
+      "id": "msg_14afffa4d001UJPzL5qwzKTspJ",
+      "time": {
+        "created": 1792259652251
+      },
+      "text": "Reply with the single token STDIN_OK.\n",
+      "files": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_14afffaa6001JRVyS1CQcrtcoT",
+      "time": {
+        "created": 1792259652269,
+        "streamed": 1792259653334,
+        "completed": 1792259653335
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4-pro",
+        "providerID": "deepseek",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "STDIN_OK"
+        }
+      ],
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0.0024166120000000003,
+      "tokens": {
+        "input": 3510,
+        "output": 5,
+        "reasoning": 0,
+        "cache": {
+          "read": 4096,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_14afffed9002vSp6uepKu7FwqD",
+      "time": {
+        "created": 1792259653337
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    }
+  ]
+}

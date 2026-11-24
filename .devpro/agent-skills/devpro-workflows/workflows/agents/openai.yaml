@@ -1,0 +1,4 @@
+interface:
+  display_name: "Devpro DP Workflows"
+  short_description: "Run Devpro /dp workflow equivalents in Codex."
+  default_prompt: "Use $devpro:workflows to run the requested Devpro workflow."

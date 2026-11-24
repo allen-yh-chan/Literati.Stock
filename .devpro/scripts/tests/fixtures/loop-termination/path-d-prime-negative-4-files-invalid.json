@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "description": "D2 judgement-table row #4: `files` is missing from the compare response entirely (status is otherwise a valid ahead/identical). The companion 'element missing filename' sub-case is covered by an inline (non-fixture-file) test case in the test file, since it exercises the same typed reason.",
+    "sha_provenance": "placeholder — form-equivalent 40-hex, NOT a real PR #2407 commit sequence. See ../README.md.",
+    "mock_env": "CROSS_MODEL_MERGE_GATE_MOCK_COMPARE_OUTPUT",
+    "pii": "none"
+  },
+  "sticky": {
+    "verdict": "PASS",
+    "last_reviewed_sha": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+  },
+  "prData": {
+    "headRefOid": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+    "baseRefName": "main"
+  },
+  "compare": {
+    "status": "ahead"
+  }
+}

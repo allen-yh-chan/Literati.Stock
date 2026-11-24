@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "source": "2026-09-03 live probe (strengthen-subagent-delegation-strategy T27): codex-cli 0.152.1 PreToolUse payload for collaborationspawn_agent; message replaced by a synthetic token of the observed Fernet-like shape and length (1164 chars); session/turn ids, transcript path and cwd removed",
+  "host": "codex",
+  "hook_payload_keys": [
+    "session_id",
+    "turn_id",
+    "transcript_path",
+    "cwd",
+    "hook_event_name",
+    "model",
+    "permission_mode",
+    "tool_name",
+    "tool_input",
+    "tool_use_id"
+  ],
+  "model_visible_tool_name": "collaboration.spawn_agent",
+  "rollout_function_call_name": "spawn_agent",
+  "payload": {
+    "tool_name": "collaborationspawn_agent",
+    "tool_input": {
+      "agent_type": "dp-probe-preload",
+      "fork_turns": "none",
+      "message": "gAAAAABqmRPIvppRh6YNz_phDKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYfmt07CJQXelsz6BIPWdkry5AHOVcjqx4_GNUbipw3-FMTahov29ELSZgnu18DKRYf",
+      "task_name": "dp_probe_preload"
+    }
+  },
+  "expected": "allow-without-record"
+}

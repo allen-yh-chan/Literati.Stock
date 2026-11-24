@@ -1,0 +1,11 @@
+{
+  "source": "official Claude Code AgentInput plus experimental fork feature contract",
+  "host": "claude-code",
+  "payload": {
+    "tool_name": "Agent",
+    "tool_input": {
+      "subagent_type": "general-purpose",
+      "prompt": "fork_reason: compare the current design with the prior decisions"
+    }
+  }
+}

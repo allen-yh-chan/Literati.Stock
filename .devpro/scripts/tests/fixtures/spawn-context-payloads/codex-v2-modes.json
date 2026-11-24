@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "source": "2026-08-31 observed Codex v2 shape matrix",
+  "host": "codex",
+  "payloads": [
+    { "tool_name": "collaborationspawn_agent", "tool_input": { "fork_turns": "all" } },
+    { "tool_name": "collaborationspawn_agent", "tool_input": { "fork_turns": "none" } },
+    { "tool_name": "collaborationspawn_agent", "tool_input": { "fork_turns": "4" } }
+  ]
+}

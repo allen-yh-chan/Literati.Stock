@@ -1,0 +1,165 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" PreToolUse .devpro/scripts/hooks/rule-load-ledger-host-diag.mjs --host=codex"
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" PreToolUse .devpro/scripts/hooks/pre-tool-gate.mjs --host=codex"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|functions.exec_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" PreToolUse .devpro/scripts/hooks/gh-footer-gate.mjs --host=codex"
+          },
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" PreToolUse .devpro/scripts/hooks/pre-tool-gate.mjs --host=codex"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit|functions.apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" PreToolUse .devpro/scripts/hooks/pre-tool-gate.mjs --host=codex"
+          }
+        ]
+      },
+      {
+        "matcher": "spawn_agent|Agent|collaborationspawn_agent|followup_task|collaborationfollowup_task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" PreToolUse .devpro/scripts/hooks/pre-tool-gate.mjs --host=codex"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__devpro[-_]work__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" PreToolUse .devpro/scripts/hooks/github-mcp-gate.mjs --host=codex"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|functions.exec_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" PostToolUse .devpro/scripts/hooks/post-tool-gate.mjs --host=codex"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" PostToolUse .devpro/scripts/hooks/post-tool-gate.mjs --host=codex"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__devpro[-_]work__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" PostToolUse .devpro/scripts/hooks/github-mcp-gate.mjs --host=codex"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" SessionStart .devpro/scripts/hooks/session-start.mjs --host=codex"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" UserPromptSubmit .devpro/scripts/hooks/user-prompt-gate.mjs --host=codex"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" Stop .devpro/scripts/hooks/recap-check.mjs --host=codex"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" Stop .devpro/scripts/hooks/session-pending-cleanup-check.mjs --host=codex"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" Stop .devpro/scripts/hooks/post-merge-check.mjs --host=codex"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" Stop .devpro/scripts/hooks/post-pr-completion-check.mjs --host=codex"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" Stop .devpro/scripts/hooks/release-back-merge-check.mjs --host=codex"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process');const orig=process.cwd();let d=orig,root='';while(true){if(path.basename(d)==='.devpro-agent-rules'){const p=path.dirname(d);if(p===d)break;d=p;continue;}process.chdir(d);if(fs.existsSync('.devpro/scripts/hooks/run-hook.mjs')){root=d;break;}const p=path.dirname(d);if(p===d)break;d=p;}process.chdir(orig);const a=process.argv.slice(1);let e=process.env.DEVPRO_RULES_ROOT,r='',bad=false;if(e){if(process.platform==='win32'&&/^\\/[a-zA-Z]\\//.test(e))e=e[1].toUpperCase()+':'+e.slice(2);const x=path.resolve(orig,e);r=path.join(x,'scripts','hooks','run-hook.mjs');if(fs.existsSync(r)){if(String(a[1]).startsWith('.devpro/'))a[1]=path.join(x,a[1].slice(8));}else{bad=true;process.stderr.write('run-hook: DEVPRO_RULES_ROOT has no scripts/hooks/run-hook.mjs: '+x+'\\n');a[1]=path.join(r,path.basename(String(a[1])));r=root?path.join(root,'.devpro','scripts','hooks','run-hook.mjs'):'';}}else if(root){r=path.join(root,'.devpro','scripts','hooks','run-hook.mjs');}if(r===''){if(bad===false)process.stderr.write('run-hook: repo root not found from '+orig+'\\n');process.exit(1);}const res=spawnSync(process.execPath,[r,...a],{cwd:root||orig,stdio:bad?['inherit','pipe','inherit']:'inherit'});if(bad){if(res.stdout&&res.stdout.length>0){process.stdout.write(res.stdout);process.exit(res.status??1);}process.exit(1);}process.exit(res.status??1);\" Stop .devpro/scripts/hooks/stop-handoff-cite.mjs --host=codex"
+          }
+        ]
+      }
+    ]
+  }
+}

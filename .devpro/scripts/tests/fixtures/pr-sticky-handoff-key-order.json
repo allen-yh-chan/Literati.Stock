@@ -1,0 +1,9 @@
+[
+  "mode", "attempt", "primary_family", "reviewer_family", "preferred_reviewer",
+  "target", "head_ref_oid", "repository_slug", "change_name", "approval_context",
+  "approval_resolution", "scope_summary", "changed_files_or_touch_list", "review_scope",
+  "page_window_max_pages", "review_material_carrier", "review_material_capability",
+  "review_material_proof", "review_material", "primary_validation_evidence",
+  "primary_test_evidence", "done_when", "linked_issue_context", "primary_verdict",
+  "retry_context", "sticky_authority_snapshot", "write_path", "allowed_tools"
+]

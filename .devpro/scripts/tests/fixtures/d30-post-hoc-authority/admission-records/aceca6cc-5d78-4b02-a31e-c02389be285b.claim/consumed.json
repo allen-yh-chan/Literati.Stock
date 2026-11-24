@@ -1,0 +1,10 @@
+{
+  "schema": "devpro.spawn-admission-claim/v1",
+  "record_id": "aceca6cc-5d78-4b02-a31e-c02389be285b",
+  "change_id": "fix-zero-value-review-rounds",
+  "round_number": 3,
+  "head_sha": "66e8a33b4c936722662be1da767eef7c1f67f91d",
+  "responsibility_id": "primary-review",
+  "dispatch_id": "5e90dc1e36835bf81537ddb1ca2294bc1655e1785edc81d7c91efaae6b995bdb",
+  "claimed_at": "2026-09-09T02:40:02.832Z"
+}

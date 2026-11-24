@@ -1,0 +1,22 @@
+{
+  "_meta": {
+    "description": "Path D' negative: compare diff only touches openspec/changes/** but includes a specs/ path segment (active change spec delta). MUST NOT be fresh-equivalent — aligns with archive-tooling R10 (spec delta/Scenario edits are behavior/scope, not bookkeeping). Issue #2413 item 5 / F-ea5e4c895069.",
+    "sha_provenance": "placeholder — form-equivalent 40-hex, NOT a real PR commit sequence. See ../README.md.",
+    "mock_env": "CROSS_MODEL_MERGE_GATE_MOCK_COMPARE_OUTPUT",
+    "pii": "none"
+  },
+  "sticky": {
+    "verdict": "PASS",
+    "last_reviewed_sha": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+  },
+  "prData": {
+    "headRefOid": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+    "baseRefName": "main"
+  },
+  "compare": {
+    "status": "ahead",
+    "files": [
+      { "filename": "openspec/changes/example-change/specs/pre-tool-mechanical-gates/spec.md" }
+    ]
+  }
+}

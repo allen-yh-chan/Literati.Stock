@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "source": "Claude legacy Task alias documented shape",
+  "host": "claude-code",
+  "payload": { "tool_name": "Task", "tool_input": { "subagent_type": "general-purpose", "resume": "agent-id", "prompt": "continue bounded responsibility" } }
+}

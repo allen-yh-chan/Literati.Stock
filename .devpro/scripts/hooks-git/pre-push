@@ -1,0 +1,18 @@
+#!/bin/sh
+# Git discovers hooks by extensionless names such as "pre-push".
+# Keep the implementation in the adjacent JavaScript SSOT.
+
+# Git Bash's /tmp alias is not a native Node path (especially when a checkout
+# path contains an apostrophe). Use its Windows spelling only on MSYS/MINGW;
+# POSIX shells keep the existing absolute-path behavior.
+case "$(uname -s)" in
+  MINGW*|MSYS*) SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd -W) || exit 1 ;;
+  *) SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd) || exit 1 ;;
+esac
+
+if ! command -v node >/dev/null 2>&1; then
+  printf '%s\n' "pre-push hook error: node executable not found on PATH" >&2
+  exit 1
+fi
+
+exec node "$SCRIPT_DIR/pre-push.mjs" "$@"

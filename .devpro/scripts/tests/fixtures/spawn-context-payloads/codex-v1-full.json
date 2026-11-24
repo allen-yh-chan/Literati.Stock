@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "source": "2026-08-31 observed Codex v1 alias shape",
+  "host": "codex",
+  "expected": "block",
+  "payload": { "tool_name": "Agent", "tool_input": { "fork_context": true } }
+}

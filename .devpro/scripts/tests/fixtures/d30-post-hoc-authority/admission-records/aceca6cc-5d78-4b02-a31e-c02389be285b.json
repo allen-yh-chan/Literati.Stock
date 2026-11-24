@@ -1,0 +1,16 @@
+{
+  "schema": "devpro.spawn-admission-record/v1",
+  "record_id": "aceca6cc-5d78-4b02-a31e-c02389be285b",
+  "change_id": "fix-zero-value-review-rounds",
+  "host": "claude-code",
+  "admitted_at": "2026-09-09T02:14:16.336Z",
+  "head_sha": "66e8a33b4c936722662be1da767eef7c1f67f91d",
+  "prompt_sha256": "8087210b6fcf25f38c51aab52256b2cff09346e461188c7b67f4e50899f06e75",
+  "objective": "independent-judgment",
+  "responsibility_id": "primary-review",
+  "instance_mode": "fresh",
+  "evidence_scope": "proposal Section 2 Touch, active OpenSpec artifacts, touched code/tests, and notes/review-fix-zero-value-review-rounds-r7.md",
+  "return_and_stop": "return finished|blocked|partial plus a seal-receipt-ready reviewerPayload; report and stop; never edit files",
+  "role": "dp-reviewer",
+  "role_binding": "host-verified"
+}

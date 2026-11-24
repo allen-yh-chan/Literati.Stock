@@ -1,0 +1,179 @@
+{
+  "name": "devpro-agent-skills",
+  "description": "Devpro first-party agent skills (reviewer CLI manuals live in .devpro/agent-skills-refs/).",
+  "groups": [
+    {
+      "name": "consumer",
+      "description": "First-party Devpro user-invocable consumer adoption health-check workflow skills.",
+      "skills": [
+        {
+          "name": "consumer-doctor",
+          "path": ".devpro/agent-skills/consumer/consumer-doctor",
+          "description": "Consumer adoption health-check recipe (matrix/profile/doctor/smoke, plus the failure-symptom triage table)."
+        }
+      ]
+    },
+    {
+      "name": "devpro-workflows",
+      "description": "First-party Devpro user-invocable devpro:* workflow skills, cross-platform via the devpro discovery entry.",
+      "skills": [
+        {
+          "name": "workflows",
+          "path": ".devpro/agent-skills/devpro-workflows/workflows",
+          "description": "Meta index that routes each devpro:* workflow request to its single-function workflow skill (no duplicated bodies)."
+        },
+        {
+          "name": "change",
+          "path": ".devpro/agent-skills/devpro-workflows/change",
+          "description": "Start a new requirement or behavior change: verb/scope precheck, chore classification, worktree + OpenSpec change setup, analyst/architect dispatch."
+        },
+        {
+          "name": "clarify",
+          "path": ".devpro/agent-skills/devpro-workflows/clarify",
+          "description": "Shared clarification recipe: explore (session-pending) or pre-analyst (meeting-notes + gates) before dp-analyst."
+        },
+        {
+          "name": "pre-pr",
+          "path": ".devpro/agent-skills/devpro-workflows/pre-pr",
+          "description": "Pre-PR gate: tests, QA docs, simplification, six-axis review, spec archive gate, PR description, post-PR workflow watch, cross-model second opinion."
+        },
+        {
+          "name": "init",
+          "path": ".devpro/agent-skills/devpro-workflows/init",
+          "description": "Environment initialization: nvm, Node.js, and OpenSpec CLI checks."
+        },
+        {
+          "name": "setup-ci",
+          "path": ".devpro/agent-skills/devpro-workflows/setup-ci",
+          "description": "One-time CI/CD setup umbrella: component discovery plus codeql / integration fast paths (leaf details in references/)."
+        },
+        {
+          "name": "sync-rules",
+          "path": ".devpro/agent-skills/devpro-workflows/sync-rules",
+          "description": "Rules sync: open a rules/<source>-v<X.Y.Z> branch and run the dedicated-branch five-step sync flow."
+        },
+        {
+          "name": "load-plan",
+          "path": ".devpro/agent-skills/devpro-workflows/load-plan",
+          "description": "List which rules, commands, agents, and hooks are loaded vs on-demand in the current session."
+        },
+        {
+          "name": "cmux-surface-comms",
+          "path": ".devpro/agent-skills/devpro-workflows/cmux-surface-comms",
+          "description": "Probe host cmux CLI before denying cross-tab/surface/session handoff; copy-execute send + send-key Enter with long-body file pitfall."
+        },
+        {
+          "name": "herdr-pane-comms",
+          "path": ".devpro/agent-skills/devpro-workflows/herdr-pane-comms",
+          "description": "Probe both legacy herdr (herdr + HERDR_ENV) and the Herdr app (hc + HC_TERMINAL_SOCKET) before cross-pane/terminal handoff; identify hc targets by foreground.cwd; wait is a wake-up signal, tasks.md stays the durable handoff carrier."
+        },
+        {
+          "name": "project-docs",
+          "path": ".devpro/agent-skills/devpro-workflows/project-docs",
+          "description": "Project-owned architecture and module documentation: build or inspect bidirectional documentation/implementation drift."
+        },
+        {
+          "name": "project-verify",
+          "path": ".devpro/agent-skills/devpro-workflows/project-verify",
+          "description": "Product verification entry: setup, run, or maintain project-owned runbooks and feature maps, with live evidence and failure triage."
+        }
+      ]
+    },
+    {
+      "name": "devpro-reviews",
+      "description": "First-party Devpro user-invocable code review workflow skills.",
+      "skills": [
+        {
+          "name": "pr-review",
+          "path": ".devpro/agent-skills/devpro-reviews/pr-review",
+          "description": "Human-assisted review of another person's PR: evidence-bound draft and confirmed review publication."
+        },
+        {
+          "name": "cross-review",
+          "path": ".devpro/agent-skills/devpro-reviews/cross-review",
+          "description": "Cross-model second-opinion PR review workflow (different-family reviewer dispatch, sticky comment write-back, merge gate enforcement)."
+        },
+        {
+          "name": "second-review",
+          "path": ".devpro/agent-skills/devpro-reviews/second-review",
+          "description": "Host-aware second-opinion reviewer executor (pr-sticky and audit-only modes, reviewer-family selection, fallback provenance)."
+        },
+        {
+          "name": "second-review-dogfood",
+          "path": ".devpro/agent-skills/devpro-reviews/second-review-dogfood",
+          "description": "Dogfood validation recipe for second-reviewer projection observability, runner heartbeat/stdout/stderr capture, CLI probe, and sticky freshness."
+        }
+      ]
+    },
+    {
+      "name": "security",
+      "description": "First-party Devpro user-invocable security workflow skills.",
+      "skills": [
+        {
+          "name": "security-scan",
+          "path": ".devpro/agent-skills/security/security-scan",
+          "description": "CodeQL security scan workflow (local CLI vs GitHub Actions detection, SARIF report generation)."
+        }
+      ]
+    },
+    {
+      "name": "openspec",
+      "description": "First-party Devpro user-invocable OpenSpec authoring workflow skills.",
+      "skills": [
+        {
+          "name": "openspec-artifact-authoring",
+          "path": ".devpro/agent-skills/openspec/openspec-artifact-authoring",
+          "description": "OpenSpec artifact authoring recipe (proposal.md / tasks.md / spec deltas)."
+        }
+      ]
+    },
+    {
+      "name": "release",
+      "description": "First-party Devpro user-invocable release/promote workflow skills.",
+      "skills": [
+        {
+          "name": "release-runbook",
+          "path": ".devpro/agent-skills/release/release-runbook",
+          "description": "Release/promote seven-step runbook (full validation, subset release, Build once, SIT/UAT/PAT/PROD, hotfix release-carrier lane) plus post-PR workflow tracking and post-merge local sync."
+        }
+      ]
+    },
+    {
+      "name": "rules-authoring",
+      "description": "First-party Devpro user-invocable rule-corpus authoring and governance workflow skills.",
+      "skills": [
+        {
+          "name": "recap-writer",
+          "path": ".devpro/agent-skills/rules-authoring/recap-writer",
+          "description": "Session Recap Discussion writing recipe (trigger check, dedup check, 6-point checklist, GitHub Discussion write-back)."
+        },
+        {
+          "name": "rule-governance",
+          "path": ".devpro/agent-skills/rules-authoring/rule-governance",
+          "description": "Rule-corpus governance workflow with selectable modes for audit-only, split/dedup review, and convergence repair of accepted audit findings."
+        },
+        {
+          "name": "knowledge-ingest",
+          "path": ".devpro/agent-skills/rules-authoring/knowledge-ingest",
+          "description": "External knowledge/framework ingest recipe (source-credibility tiering, Ingest-Mapping Ledger, mapping compatibility against the 6 Principles, knowledge-digest artifact)."
+        },
+        {
+          "name": "knowledge-distill",
+          "path": ".devpro/agent-skills/rules-authoring/knowledge-distill",
+          "description": "Knowledge distillation recipe (Distillation Ledger, minimal carrier selection, self-distill safeguards, ingest/digest handoff)."
+        }
+      ]
+    },
+    {
+      "name": "devops",
+      "description": "First-party Devpro user-invocable deployment operations skills.",
+      "skills": [
+        {
+          "name": "iis-webapp-deploy",
+          "path": ".devpro/agent-skills/devops/iis-webapp-deploy",
+          "description": "Deploy a .NET/IIS web app to an existing site: recon, backup, package and upload, stop app pool, sync, verify, and roll back."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+---
+name: consumer-hook-file-maintenance
+description: Consumer repo 的 hook 檔案維護：rules sync 的執行位元還原與 drift 分類、consumer 自有 git hook 的落點。觸發：sync 報 exec-bit drift、要放 consumer 自有 git hook。
+---
+
+# Consumer Hook File Maintenance
+
+> Load-chain：本檔由 `consumer-adoption.md` §Hook 執行位元與落點 按需載入；一般導入健康檢查（matrix／doctor／smoke）不需讀本檔。
+
+### Executable-bit restoration (POSIX hook guard)
+
+`sync-agent-rules.mjs --sync` 會把 source 端標記 `100755` 的腳本（含 `.devpro/scripts/hooks-git/pre-push` deletion guard）還原執行位元，兩面都做：POSIX 上以 `fs.chmod 0o755` 設工作樹執行位元（git 依工作樹決定 hook 是否執行），並以 `git update-index --chmod=+x` 把 consumer git index 設為 `100755`（Windows `core.fileMode=false` 下依然有效，因 index-only 不依賴檔案系統執行位元）。同步結束時雙向比對 source／consumer 的 `100755` synced paths 集合，只有兩類算真正的 sync drift：(a) source 標 `100755` 而 consumer index 缺（missing）；(b) source 有 track 該路徑但未標 `100755`、consumer 卻標了。`--sync` 對 drift 只 `warn`（不 block sync）。第三類是 **consumer-local**：consumer index 標 `100755`、但 source repo 根本沒 track 該路徑——典型是 consumer 自有的 git hook，落點 `.devpro/scripts/hooks-git/<hook>`（放在 source 擁有的 `core.hooksPath` 目錄下）；`--sync` 不刪不改這類檔案，其 exec-bit 也不列為 drift。但 consumer hook 若與 source 隨附的 hook **同名**（隨附清單以 `git ls-files .devpro/scripts/hooks-git` 為準，不寫死），該檔就是 source 擁有的 synced 檔、不是 consumer-local，`--sync` 以 source 版本為準，不得把自有邏輯放在該路徑；同名需求改放 consumer 自己的 `core.hooksPath`（例如 husky），`devpro:change` 環境入口會保留該 hooksPath，僅對確認 untracked 的 hook 自動 chain deletion guard；tracked husky／consumer hook 不改寫、不建 backup，由 consumer 以 repo-relative 路徑自行委派；tracked 舊 chain wrapper 須先核對 index／hook／backup，再手動還原與移除 obsolete backup，窄版 compliant 判定與升級指引見 `environment-setup-nvm-nodejs-openspec.md` 的 clone-local `core.hooksPath` 條；沒有 `<hook>.local` 之類的委派機制。`--check` 對 (a)/(b) 兩類 drift fail-closed（exit≠0，訊息指向 `--sync`／mode 修復）；若差異只有 consumer-local extra，`--check` 只 `warn` 並 exit 0，訊息明說該檔為 consumer-local、不是 sync drift，且**不得**叫操作者跑 `--sync`。source 或 consumer 的 git index 不可讀（含 `git ls-files -s` 輸出超出讀取上限）時 `--check` 亦 fail closed（`--sync` 僅 `warn`），不得 silent green，也不得把讀不到的 consumer index 當成空集合而誤報 missing。手動補救依類別分流：(a) 缺失類（source `100755`、consumer index 缺）POSIX 可 `chmod +x .devpro/scripts/hooks-git/pre-push`（工作樹）＋ `git update-index --chmod=+x -- .devpro/scripts/hooks-git/pre-push`（index），或直接跑 `--sync` 還原；(b) extra 類（source 以 `100644` track 該路徑、consumer index 卻標 `100755`）**相反**，`--sync` 不會清除該 mode，須以 `git update-index --chmod=-x -- <path>` 移除（POSIX 工作樹另 `chmod -x <path>`）再重跑 `--check`。

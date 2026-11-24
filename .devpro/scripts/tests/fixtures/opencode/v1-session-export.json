@@ -1,0 +1,51 @@
+{
+  "info": {
+    "id": "ses_eb50fbd13ffeZxVn2BnMSXEizk",
+    "title": "fixture"
+  },
+  "messages": [
+    {
+      "info": {
+        "id": "msg_14af045af001userAAAAAAAAAA",
+        "role": "user",
+        "sessionID": "ses_eb50fbd13ffeZxVn2BnMSXEizk",
+        "time": {
+          "created": 1792258623000
+        }
+      },
+      "parts": [
+        {
+          "type": "text",
+          "text": "Review packet\n"
+        }
+      ]
+    },
+    {
+      "info": {
+        "id": "msg_14af045af002bPAfuS5bXN666s",
+        "role": "assistant",
+        "sessionID": "ses_eb50fbd13ffeZxVn2BnMSXEizk",
+        "providerID": "deepseek",
+        "modelID": "deepseek-v4-pro",
+        "finish": "stop",
+        "time": {
+          "created": 1792258624000,
+          "completed": 1792258665400
+        }
+      },
+      "parts": [
+        {
+          "type": "step-start"
+        },
+        {
+          "type": "text",
+          "text": "verdict: PASS\nreason: fixture\n"
+        },
+        {
+          "type": "step-finish",
+          "reason": "stop"
+        }
+      ]
+    }
+  ]
+}

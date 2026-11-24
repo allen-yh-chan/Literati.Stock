@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "source": "Claude AgentInput documented shape",
+  "host": "claude-code",
+  "payload": { "tool_name": "Agent", "tool_input": { "subagent_type": "Explore", "prompt": "bounded exploration" } }
+}

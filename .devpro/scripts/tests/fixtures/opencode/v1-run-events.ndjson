@@ -1,0 +1,3 @@
+{"type":"step_start","timestamp":1792258624007,"sessionID":"ses_eb50fbd13ffeZxVn2BnMSXEizk","part":{"id":"prt_1","messageID":"msg_14af045af002bPAfuS5bXN666s","sessionID":"ses_eb50fbd13ffeZxVn2BnMSXEizk","type":"step-start"}}
+{"type":"text","timestamp":1792258665376,"sessionID":"ses_eb50fbd13ffeZxVn2BnMSXEizk","part":{"id":"prt_2","messageID":"msg_14af045af002bPAfuS5bXN666s","sessionID":"ses_eb50fbd13ffeZxVn2BnMSXEizk","type":"text","text":"verdict: PASS\nreason: fixture\n","time":{"start":1792258658846,"end":1792258665348}}}
+{"type":"step_finish","timestamp":1792258665376,"sessionID":"ses_eb50fbd13ffeZxVn2BnMSXEizk","part":{"id":"prt_3","reason":"stop","messageID":"msg_14af045af002bPAfuS5bXN666s","sessionID":"ses_eb50fbd13ffeZxVn2BnMSXEizk","type":"step-finish"}}

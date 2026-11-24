@@ -1,0 +1,15 @@
+{
+  "_meta": {
+    "description": "D11 (c) fault-recovery does not count toward round_count: a review dispatch faults (infra failure, not a review verdict) and is re-dispatched with attempt=fault-recovery. round_count MUST stay unchanged; dispatch_lineage MUST gain exactly one entry with kind=fault-recovery and round equal to the current (unincremented) round_count.",
+    "sha_provenance": "placeholder — form-equivalent value, not a real PR #2407 commit or dispatch id. See ./README.md.",
+    "pii": "none"
+  },
+  "sidecar": {
+    "pr_number": "2407",
+    "round_count": 2
+  },
+  "handoff": {
+    "mode": "pr-sticky",
+    "attempt": "fault-recovery"
+  }
+}

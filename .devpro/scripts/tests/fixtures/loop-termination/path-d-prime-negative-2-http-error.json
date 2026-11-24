@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "description": "D2 judgement-table row #2: HTTP 404/422 (sha does not exist upstream, or repo access denied). In a real gh CLI invocation this also manifests as a non-zero process exit (same code path as row #1); simulated here via CROSS_MODEL_MERGE_GATE_MOCK_COMPARE_ERROR with a distinct fixture so the 404/422 condition has its own dedicated test case even though it collapses to the same typed reason as row #1.",
+    "sha_provenance": "placeholder — form-equivalent 40-hex, NOT a real PR #2407 commit sequence. See ../README.md.",
+    "mock_env": "CROSS_MODEL_MERGE_GATE_MOCK_COMPARE_ERROR",
+    "pii": "none"
+  },
+  "sticky": {
+    "verdict": "PASS",
+    "last_reviewed_sha": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+  },
+  "prData": {
+    "headRefOid": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+    "baseRefName": "main"
+  },
+  "compare": {
+    "error": "simulated: gh: Not Found (HTTP 404) — sha does not exist upstream or repo access denied"
+  }
+}

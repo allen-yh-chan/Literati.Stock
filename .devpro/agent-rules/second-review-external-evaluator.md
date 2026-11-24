@@ -1,0 +1,41 @@
+---
+name: second-review-external-evaluator
+description: Second review 的 External Evaluator 路徑：TL 發行審查單、另一 family 的獨立 session 自寫 sticky／audit report、TL 驗收收據的三指令（發行／驗收／作廢）、不合規情形與殘餘風險。觸發：runner subprocess timeout、目標 family 無 runner recipe、CLI 不可由 runner 呼叫、大 PR 改選 live review。
+---
+
+# Second Review External Evaluator（審查單＋收據）
+
+> Load-chain：本檔由 `pr-review-evidence-verification.md` §External Evaluator、`code-review-cross-model.md` 與各 host adapter／second-review skill 按需載入；runner 路徑的 second review 與一般 PR evidence 驗證不需讀本檔。
+
+Runner subprocess timeout、目標 family 無 runner recipe、CLI 不可由 runner 呼叫，或大 PR 改選 live review 時，合規 recovery 是 **External Evaluator**（取代舊「(次) Independent Interactive Session as Evaluator（fallback）」，非只 timeout fallback）：TL 發行**審查單**（`executor_kind: "external-evaluator"`），交由另一 family 的**獨立 session**（sandbox 外、能讀 PR、能寫 GitHub）live 讀 PR 並自己寫回 sticky，TL 再驗收收據。
+
+## 一般 audit（audit-only）
+
+設計、spec、規則、local diff 或 bounded artifact 可用同一 External Evaluator。預設 runner 不變；caller 明選 `executor_kind: "external-evaluator"` 時，沿用既有 audit handoff，給 `mode: "audit-only"`、canonical `target`（`design`／`spec`／`rule change`／`local diff`／`bounded artifact`）、explicit `repository_slug`、另一已證明 family 的 `reviewer_family` 與閉集 `reviewer_tool`，完整 `embedded-diff` 材料、`review_material_complete: true`、`linked_issue_context: "none"`；`pr_number` 為 `none`，head 依既有 audit sentinel 契約。不得轉成 live-read 或 page-window。未知／同 group family fail closed。
+
+1. **發行**：`node .devpro/scripts/render-second-review-packet.mjs <handoff-json> --carrier-root <main-checkout-root>/notes/cross-review`。將 renderer 產出的完整 packet 交給獨立 evaluator；renderer 零 spawn，不提供 runner command。ticket 凍結 v3 Review Data，`review_data_sha256` 綁定 `JSON.stringify(data)` 的 SHA-256，不能只綁 HEAD。
+2. **Evaluator 寫報告**：依票上唯一定址，自己寫 `notes/cross-review/<attempt_id>/external-audit-review.json`；這是 audit 唯一輸出寫入例外，禁改被審 repo 檔、禁 GitHub 讀寫。schema `devpro-external-audit-review/v1` 的 exact keys／template 由 ticket 產生；包含 repo/head/attempt/dispatch/material digest、實際 tool/model、verdict/reason、findings 與 structured `guarantee_assessment`。報告最多 64 KiB，reason 沿用共享 8192-byte 上限，不截斷。findings 每項只含 `id`、`severity`（Critical／Important／Suggestion）、repo-relative／段落 `carrier`、`description`；Important/Critical 的 Suggested direction／Verify by 依共享 audit duty 放在 reason 內，仍受 reason byte cap。TL 另管 ledger status/disposition。
+3. **驗收**：同指令 `node .devpro/scripts/accept-external-second-review.mjs <packet-dir>`；完全離線，無 `gh` 前置需求。驗 packet bytes／材料 digest、report identity、tool/model、findings 及 guarantee assessment，再經共享 accepted/voided CAS 發布 `devpro-second-review-completion/v2` 與 byte-identical packet-local mirror。audit receipt 使用 `outcome: external_evaluator_audit_accepted`、`classification: external_audit_verified`、`process_close_observed: false`，不含 sticky 欄位。exit 0 只表示報告已接收，四種 verdict 原樣保留；CRITICAL／UNAVAILABLE 不變成 PASS。讀 findings 前比對報告 bytes 的 SHA-256 與 receipt `audit_report_sha256`，不得信任後改的 report；已 accepted 重跑只修復／驗證 receipt，不重審 mutable report。
+
+Missing report（`external_audit_report_missing`）先等 reviewer；invalid／binding／provenance mismatch（`external_audit_report_invalid`／`external_audit_report_binding_mismatch`／`external_audit_provenance_mismatch`）保留 open dispatch，reviewer 修正原票報告後重試。要換材料必須依下述作廢／重發流程；mirror 衝突保留既有 bytes，調查後重試，不能覆寫舊證據。Caller 仍遵循 second-review skill 的 guarantee TL ruling、findings ledger、窄掃及 round cap。這不是 merge-gate evidence，不可接 real-PR predecessor、不建立 post-PR marker、不消耗 PR round budget，也不共用 `(none,none)` PR capacity bucket。
+
+## PR sticky
+
+以下 **三指令** 適用 `mode: pr-sticky`：
+
+非 Codex family 在大 PR 連續以 `reviewer_completion_contract_invalid` 結束（同一 PR、同一 completion 欄位）時，不要靠重試消耗 page window：改用本節的 External Evaluator 路徑（`--external-evaluator <tool>`），由 evaluator live 讀 PR 並自寫 sticky。
+
+1. **發行**：handoff 由 `node .devpro/scripts/build-pr-sticky-handoff.mjs ... --external-evaluator <tool>` 產生（不要手動組 JSON；raw diff 超過嵌入上限致 `review_material_unavailable` 時即用此旗標；訊息寫明 PR 沒有內容差異（三點 changed-file list 為空）時本旗標不適用，見 `code-review-cross-model.md` §Zero-diff ancestry repair exemption；使用者明確授權同 family 時另加 `--allow-same-family <why>`，票上會出現 `same-family fallback: <why>` 的 reason lead 要求，accept 會驗），再 `node .devpro/scripts/render-second-review-packet.mjs <handoff-json> --carrier-root <root>`；handoff 帶 `executor_kind: "external-evaluator"`、`reviewer_family`、`reviewer_tool`、`review_material_carrier: "external-live-reads"`；此路徑用 `mode: pr-sticky`，零 spawn；packet 新段 `## External Evaluator Ticket` 含 repo/PR/head SHA/scope/`dispatch_id`/`Tool:` token/exact 寫入 recipe（單一 repo-relative gated writer `write-second-review-sticky-gated.mjs`＋本票 carrier sidecar，create／update 共用；body file 在同一 carrier 目錄；exact 字面以票上 `sticky_write_exact_recipe`／`sticky_write_body_file` 行為準，SSOT 見 `cross-runtime-parity` spec）/footer 範本。TL 交付時 MUST 指示 evaluator session 在 main checkout 根目錄開啟（可由 TL 自行以另一 family 的 CLI 啟動，啟動指令見各 host 的 adapter，也可由使用者開啟；不論誰啟動，審查結論與 sticky 都 MUST 由 evaluator 自己產生並寫回），且 MUST NOT 附加票上沒有的限制（例如禁止寫入票上 recipe 會產生的結果檔），否則 evaluator 會停在發布前；前置條件為 `gh`、`node`，以及能讀寫 main checkout 該 gitignored `notes/cross-review/<attempt_id>/` 目錄。main checkout 的 gated writer 若版本過舊、尚不接受 repo-relative sidecar，會以 `sticky_credential_gate_sidecar_invalid`（`sidecar path must be absolute`）fail closed。從 main checkout 根執行時，writer 失敗的分類寫在該 carrier 目錄的 `sticky-write-result*.json`，除憑證命中外 stderr 無輸出；evaluator MUST 停止並回報 TL，TL 讀該檔判斷：版本錯位即作廢該票，待 main checkout 更新後重發。
+2. **驗收**：evaluator 自寫 sticky 後 TL 跑 `node .devpro/scripts/accept-external-second-review.mjs <packet-dir>`；exit 0＝accepted。Helper 做**寫入前 live 檢查**同構驗證：重讀 PR head/comments、canonical sticky 恰一則、footer `Tool:`/`Model:`/`dispatch_id` 相符、disposition 正確，不符 typed 拒絕，不補償寫入：`external_sticky_contract_invalid`（sticky 格式不合契約）、`external_sticky_provenance_mismatch`（footer `Tool:`/`Model:` 與 dispatch 不符）、`external_sticky_disposition_unbound`（comment id／時間未綁本票）——三者 `update` 票→evaluator 依原票修 sticky 後重跑 accept；`create` 票已建立 sticky 時原票無合規改寫路徑→先作廢再重發（新票為 `update`）；`external_sticky_ambiguous`（marker 候選數≠1 或 malformed：0 則→evaluator 尚未寫入或 marker 形狀不符，完成／修正後重跑，勿作廢進行中審查；evaluator 已因 head 不符 STOP→同 `external_head_moved`；多則→清理後重發；malformed→同上三者處理）、`external_head_moved`（head 前進→先作廢舊票再於新 head 重發）、`reviewer_dispatch_identity_collision`（dispatch/sidecar/`dispatch_id`／packet-dir 不符→確認 packet-dir 正確；live sticky 的 `dispatch_id` 仍是前一 dispatch（`update` 票 evaluator 尚未寫入）→等 evaluator 寫完再重跑，勿作廢；其餘仍不符即重發票；renderer 重發時以前一 dispatch 未關閉拒絕→先作廢再重發）、`external_ticket_context_unreadable`（packet-dir 參數或 sidecar 缺失／損毀→確認路徑；sidecar 損毀即重發票）、`external_ticket_live_read_failed`（gh 讀取失敗→修連線後重跑）。
+3. **作廢**：`node .devpro/scripts/render-second-review-packet.mjs --void-external-dispatch <packet-dir>`；後續 accept 舊 dispatch 得 `external_dispatch_closed`，lineage 可接續重發。**重發**＝舊票尚未 accepted 時一律先作廢再 render 新票（renderer 拒絕接續未關閉的前一 dispatch）；已 accepted 的舊票直接重發。
+
+**不合規與邊界**：
+
+- **TL 手寫 sticky／audit report 不合規**：TL/primary host 自己 PATCH sticky、代填 verdict 不構成 External Evaluator——收據只在 evaluator 自身完成 live read/寫回並通過 accept 的 live 驗證後成立。
+- **web chat 轉貼不是 gate artifact**：轉貼網頁聊天回覆進 sticky 不合規；evaluator MUST 能自行以 `gh` 讀 PR，並以 main checkout 的 gated writer 寫回，轉述文字無機械可驗執行證據。
+- **Merge gate 殘餘風險**：merge gate 只解析 live sticky、不讀本機收據，evaluator 自寫且 `dispatch_id`／head 相符的 PASS/WARN sticky 在 accept 前即可能通過 merge gate；只有 Post-PR Completion Gate 保留 marker。TL MUST 先完成 accept 才 merge。
+- **信任錨殘餘風險**：TL 執行驗收即認可來自真實審查；無法分辨對未經審查 sticky 驗收（同今日 TL 執行 runner 風險）。live 重讀＋body digest 綁定內容；事後改動即漂移，marker 保留不清（見 `post-pr-completion-gate.md`）。
+- **Gated writer 屬 cooperative-only**：evaluator 與 TL 同帳號、同機器並可寫入 carrier 目錄，任何本機防篡改機制它都能一併改掉；gated writer 在 external 路徑上只防照單執行的 evaluator 不小心把憑證字面寫進 public comment，不是對不照單 evaluator 的信任邊界。accept 的憑證檢查（credential-literal assert）仍是這條路徑上唯一的機械兜底，但它的 material 字面也讀自 evaluator 可寫的 carrier sidecar，對不照單者只剩憑證形狀掃描有效；MUST NOT 宣稱 sidecar digest 能阻止 evaluator 改 disposition 或 credential-check 輸入——不照單者可在 accept 之前以 raw 寫入，或換掉 carrier sidecar 並重算未加密鑰的 digest 繞過它。
+- **既有約束保留**：不重跑 primary 已綠測試（`pr-review-evidence-verification.md` §(主) Second Reviewer 不重跑 primary 已綠 tests）、執行面證據（`pr-review-evidence-verification.md` §External Reviewer Execution Surface）、PGE 與 family 約束不變。
+
+各 host 入口與 footer token SSOT 見 `platform-adapters/<host>.md`；token 閉集 SSOT 是 `second-review-sticky-authority.mjs` `STICKY_PROVENANCE_TOOL_TOKENS`。
