@@ -255,3 +255,24 @@ async def load_or_fetch(
         Path(tmp_name).unlink(missing_ok=True)
         raise
     return raw
+
+
+def parse_open_volume(raw: RawMarketRows) -> tuple[tuple[float, ...], tuple[float, ...]]:
+    """Daily ``(opens, volumes)`` sorted by date, aligned with ``parse_market_data`` bars.
+
+    Kept separate from ``Bar`` so the close-only path (and its cache trust
+    rule) is untouched. Open must be finite and > 0; ``Trading_Volume`` (shares)
+    must be finite and >= 0. Bools, non-numbers and float overflow fail loudly.
+    """
+    rows: list[tuple[date, float, float]] = []
+    for row in raw.prices:
+        day = _row_date(row, "price")
+        open_ = _finite_number(row.get("open"))
+        if open_ is None or open_ <= 0:
+            raise ValueError(f"invalid open {row.get('open')!r} on {day}")
+        volume = _finite_number(row.get("Trading_Volume"))
+        if volume is None or volume < 0:
+            raise ValueError(f"invalid volume {row.get('Trading_Volume')!r} on {day}")
+        rows.append((day, open_, volume))
+    rows.sort(key=lambda r: r[0])
+    return tuple(r[1] for r in rows), tuple(r[2] for r in rows)

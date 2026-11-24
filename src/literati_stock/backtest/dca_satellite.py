@@ -341,11 +341,12 @@ def render_report(results: dict[Strategy, Result], params: Params, data: MarketD
 # --- CLI --------------------------------------------------------------------
 
 
-def _today_taipei() -> date:
+def today_taipei() -> date:
     return datetime.now(ZoneInfo("Asia/Taipei")).date()
 
 
-async def _load(end: date, cache_dir: Path, refresh: bool) -> MarketData:
+async def load_raw_rows(end: date, cache_dir: Path, refresh: bool) -> RawMarketRows:
+    """Cached 0050 raw rows from ``DATA_START`` to ``end`` (shared by all backtests)."""
     # Anonymous FinMind quota suffices (3 requests); no DB settings required.
     token = os.environ.get("FINMIND_TOKEN", "")
 
@@ -353,20 +354,23 @@ async def _load(end: date, cache_dir: Path, refresh: bool) -> MarketData:
         async with FinMindClient(token, AsyncLimiter(8, 60)) as client:
             return await fetch_raw_rows(client, STOCK_ID, DATA_START, end)
 
-    raw = await load_or_fetch(
-        cache_dir, STOCK_ID, end, fetcher, refresh=refresh, today=_today_taipei()
+    return await load_or_fetch(
+        cache_dir, STOCK_ID, end, fetcher, refresh=refresh, today=today_taipei()
     )
-    return parse_market_data(raw)
+
+
+async def load_market_data(end: date, cache_dir: Path, refresh: bool) -> MarketData:
+    return parse_market_data(await load_raw_rows(end, cache_dir, refresh))
 
 
 def main(argv: Sequence[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0] if __doc__ else None)
-    parser.add_argument("--end-date", type=date.fromisoformat, default=_today_taipei())
+    parser.add_argument("--end-date", type=date.fromisoformat, default=today_taipei())
     parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR)
     parser.add_argument("--refresh", action="store_true", help="ignore cached data")
     args = parser.parse_args(argv)
     try:
-        data = asyncio.run(_load(args.end_date, args.cache_dir, args.refresh))
+        data = asyncio.run(load_market_data(args.end_date, args.cache_dir, args.refresh))
     except ValueError as exc:
         raise SystemExit(f"cannot backtest {STOCK_ID} up to {args.end_date}: {exc}") from exc
     print(render_report(run_backtest(data, DEFAULT_PARAMS), DEFAULT_PARAMS, data))
