@@ -455,3 +455,53 @@ def test_cli_turns_data_errors_into_clean_exit(monkeypatch: pytest.MonkeyPatch) 
     monkeypatch.setattr(module.asyncio, "run", fake_run)
     with pytest.raises(SystemExit, match="cannot backtest 0050 up to 2014-12-31"):
         module.main(["--end-date", "2014-12-31"])
+
+
+# --- daily (TVOL-style) signals on non-month-end bars --------------------------------
+
+
+def test_daily_signal_advance_executes_on_a_non_contribution_bar() -> None:
+    data = _flat()
+    params = replace(FREE, loan_annual_rate=0.10)
+    # Signal on Feb 2 (a contribution bar) executes on Feb 28 (not one).
+    result = _run(data, "a-TVOL", _signal(len(data.bars), 2), params)
+
+    def grow(amount: float, start: str, end: str) -> float:
+        days = (date.fromisoformat(end) - date.fromisoformat(start)).days
+        return amount * 1.10 ** (days / 365)
+
+    balance = grow(3000.0, "2024-02-28", "2024-03-02") - 1000.0
+    balance = grow(balance, "2024-03-02", "2024-04-02") - 1000.0
+    third = grow(balance, "2024-04-02", "2024-05-02")
+    assert result.topups == 1
+    assert result.loan_interest == pytest.approx(third - 1000.0)
+    # shares: 10 (Feb 2) + 30 (Feb 28 advance) + 10 (Jun) = 50.
+    assert result.final_value == pytest.approx(5000.0)
+
+
+def test_daily_signal_bonus_buy_executes_on_a_non_contribution_bar() -> None:
+    bars = _months([100.0] * 6)
+    bars[3] = ("2024-02-28", 50.0)
+    data = _data(bars)
+    result = _run(data, "b-TVOL", _signal(len(data.bars), 2))
+    # Bonus received Feb 2, bought Feb 28 at 50 -> 60 sh worth 6000 at the end.
+    pure = _run(data, "A", _signal(len(data.bars)))
+    assert result.topups == 1
+    assert result.final_value == pytest.approx(pure.final_value + 6000.0)
+
+
+async def test_loader_does_not_retry_when_closes_themselves_are_unusable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import literati_stock.backtest.dip_topup as module
+
+    calls: list[bool] = []
+
+    async def fake_load(_end: date, _cache: Path, refresh: bool) -> RawMarketRows:
+        calls.append(refresh)
+        return RawMarketRows(prices=[], dividends=[], splits=[])
+
+    monkeypatch.setattr(module, "load_raw_rows", fake_load)
+    with pytest.raises(ValueError, match="at least 2 price bars"):
+        await module.load_inputs(date(2024, 1, 3), tmp_path, refresh=False)
+    assert calls == [False]

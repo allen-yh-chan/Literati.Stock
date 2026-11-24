@@ -475,10 +475,15 @@ def render_report(
 async def load_inputs(
     end: date, cache_dir: Path, refresh: bool
 ) -> tuple[MarketData, tuple[float, ...], tuple[float, ...]]:
-    """Load 0050 rows; refetch once if cached rows lack a usable open/volume."""
+    """Load 0050 rows; refetch once only if the closes parse but open/volume do not.
+
+    The close-only cache trust rule cannot see open/volume, so a cached file
+    may lack them. Any other data error (e.g. too few bars) is not retried.
+    """
     raw = await load_raw_rows(end, cache_dir, refresh)
+    data = parse_market_data(raw)
     try:
-        return parse_market_data(raw), *parse_open_volume(raw)
+        return data, *parse_open_volume(raw)
     except ValueError:
         if refresh:
             raise
