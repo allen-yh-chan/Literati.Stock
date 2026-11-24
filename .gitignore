@@ -45,6 +45,9 @@ Thumbs.db
 
 # Claude Code local settings
 
+# Backtest data cache
+.cache/
+
 # Logs
 *.log
 logs/
