@@ -1,0 +1,18 @@
+{
+  "mode": "pr-sticky", "attempt": "initial", "primary_family": "openai-codex",
+  "reviewer_family": "claude", "preferred_reviewer": "claude", "target": "PR #4123",
+  "head_ref_oid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "repository_slug": "synthetic/example",
+  "change_name": "synthetic-handoff-contract", "approval_context": "none",
+  "approval_resolution": {"status": "not-required"},
+  "scope_summary": "Clarify the synthetic guide behavior", "changed_files_or_touch_list": ["docs/guide.md"],
+  "review_scope": {"kind": "full-pr", "pull_request_number": 4123, "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+  "page_window_max_pages": 1, "review_material_carrier": "embedded-diff",
+  "review_material_capability": "scope-bound-embedded-complete-diff-v1",
+  "review_material_proof": {"kind":"embedded-complete-diff-v1","scope_fingerprint_sha256":"5442f6b028c5c30056b89c04777251a0f4ba101e4e6d65f920139e8e4b329456","material_format":"git-unified-diff","material_utf8_bytes":119,"material_sha256":"03f56a296e170e85fbee561601a430b002725da799fee6fb73f6987c07a61690"},
+  "review_material": "diff --git a/docs/guide.md b/docs/guide.md\n--- a/docs/guide.md\n+++ b/docs/guide.md\n@@ -1 +1 @@\n-old guide\n+clear guide\n",
+  "primary_validation_evidence": "Synthetic strict OpenSpec validation passed.", "primary_test_evidence": "Synthetic focused tests passed.",
+  "done_when": ["The guide states the updated behavior."], "linked_issue_context": "none", "primary_verdict": "none",
+  "retry_context": {"classification":"none","sticky_verification":"not-needed"},
+  "sticky_authority_snapshot": {"repository_slug":"synthetic/example","pr_number":4123,"completeness":{"status":"complete","pagination_exhausted":true,"pages_fetched":1},"query_error":null,"comments":[]},
+  "write_path": "none", "allowed_tools": "none"
+}

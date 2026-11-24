@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "source": "Claude SendMessage continuation carrier (design D34). Field names `to` / `message` are taken verbatim from the SendMessage tool schema as exposed by the runtime to this session on 2026-09-03 (Claude Code, claude-fable-5-1); the PreToolUse envelope shape mirrors the observed `Agent` envelope (tool_name + tool_input). No live PreToolUse capture of this tool exists yet, so this fixture is constructed, not replayed — see decisions.md D34.",
+  "host": "claude-code",
+  "payload": {
+    "tool_name": "SendMessage",
+    "tool_input": {
+      "to": "dp-reviewer-thread",
+      "message": "objective: independent-judgment\nresponsibility_id: primary-review\ninstance_mode: continue\nparent_record_id: 586d4b24-0000-4000-8000-000000000000\nevidence_scope: openspec/changes/<change>/proposal.md; notes/review-<change>-receipt-r2.json\nreturn_and_stop: structured receipt JSON; stop after the receipt\nrole: dp-reviewer\n\nbounded rereview: only the open finding ledger plus changed carriers"
+    }
+  }
+}

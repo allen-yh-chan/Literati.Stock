@@ -1,0 +1,22 @@
+{
+  "_meta": {
+    "description": "D2 judgement-table row #3: compare status is 'diverged' (not an ancestor relationship / lineage broken between last_reviewed_sha and headRefOid). MUST fail closed even though the files list would otherwise be whitelist-only.",
+    "sha_provenance": "placeholder — form-equivalent 40-hex, NOT a real PR #2407 commit sequence. See ../README.md.",
+    "mock_env": "CROSS_MODEL_MERGE_GATE_MOCK_COMPARE_OUTPUT",
+    "pii": "none"
+  },
+  "sticky": {
+    "verdict": "PASS",
+    "last_reviewed_sha": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+  },
+  "prData": {
+    "headRefOid": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+    "baseRefName": "main"
+  },
+  "compare": {
+    "status": "diverged",
+    "files": [
+      { "filename": "openspec/changes/archive/2026-08-30-add-web-theme-locale-design-check/decisions.md" }
+    ]
+  }
+}

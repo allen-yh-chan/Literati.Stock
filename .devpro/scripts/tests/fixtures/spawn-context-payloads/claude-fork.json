@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "source": "official Claude Code Agent tool `subagent_type: fork` (design D2 / D6 2.1a fork exception)",
+  "host": "claude-code",
+  "payload": {
+    "tool_name": "Agent",
+    "tool_input": {
+      "subagent_type": "fork",
+      "prompt": "fork_reason: short side task that needs the current design discussion once\nobjective: context-isolation\nresponsibility_id: cp1-design-diff-summary\ninstance_mode: fork\nevidence_scope: openspec/changes/<change>/design.md §Decisions\nreturn_and_stop: ≤300 tokens summary; stop after reporting\nrole: dp-explorer\n\nSummarize the decision deltas."
+    }
+  }
+}

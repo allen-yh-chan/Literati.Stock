@@ -1,0 +1,82 @@
+{
+  "schema": "devpro-lineage-usage-fixture/v1",
+  "sessions": {
+    "root": { "host": "codex", "session_id": "00000000-0000-4000-8000-000000000001", "usage": { "input": 100, "output": 20, "cache_read": 30, "cache_creation": null }, "terminality": "terminal" },
+    "child": { "host": "codex", "session_id": "00000000-0000-4000-8000-000000000002", "usage": { "input": 40, "output": 8, "cache_read": 10, "cache_creation": null }, "terminality": "terminal" },
+    "grandchild": { "host": "codex", "session_id": "00000000-0000-4000-8000-000000000003", "usage": { "input": 20, "output": 4, "cache_read": 5, "cache_creation": null }, "terminality": "terminal" },
+    "other_parent": { "host": "codex", "session_id": "00000000-0000-4000-8000-000000000004", "usage": { "input": 10, "output": 2, "cache_read": 1, "cache_creation": null }, "terminality": "terminal" }
+  },
+  "graph_cases": {
+    "recursive": [
+      { "parent": "root", "child": "child", "evidence_digest": "edge-1" },
+      { "parent": "child", "child": "grandchild", "evidence_digest": "edge-2" }
+    ],
+    "duplicate": [
+      { "parent": "root", "child": "child", "evidence_digest": "edge-1" },
+      { "parent": "root", "child": "child", "evidence_digest": "edge-1" }
+    ],
+    "shared": [
+      { "parent": "root", "child": "child", "evidence_digest": "edge-1" },
+      { "parent": "root", "child": "other_parent", "evidence_digest": "edge-2" },
+      { "parent": "other_parent", "child": "child", "evidence_digest": "edge-3" }
+    ],
+    "cycle": [
+      { "parent": "root", "child": "child", "evidence_digest": "edge-1" },
+      { "parent": "child", "child": "root", "evidence_digest": "edge-2" }
+    ],
+    "unresolved": [
+      { "parent": "root", "child_identity": "codex:00000000-0000-4000-8000-000000000099", "evidence_digest": "edge-missing" }
+    ]
+  },
+  "spawn_observability": [
+    { "state": "complete", "spawn_events": 0, "expected_complete": true },
+    { "state": "partial", "spawn_events": 0, "expected_gap": "codex-spawn-observability-unverified" },
+    { "state": "unavailable", "spawn_events": 0, "expected_gap": "codex-spawn-observability-unverified" }
+  ],
+  "claude_modes": [
+    { "evidence": { "trusted_mode": "fresh" }, "expected": "fresh" },
+    { "evidence": { "trusted_mode": "fork" }, "expected": "fork" },
+    { "evidence": { "tool_input": { "resume": "agent-1" }, "session_id": "agent-1" }, "expected": "resume" },
+    { "evidence": { "nested_call": true, "nested_carrier": "agent-2" }, "expected": "nested" },
+    { "evidence": { "agent_type": "general-purpose" }, "expected": "unknown", "expected_gap": "claude-context-mode-unknown" }
+  ],
+  "discussion_2411": {
+    "boundary": {
+      "schema": "devpro-lineage-evidence-boundary/v1",
+      "scope": "mixed-session",
+      "generated_at": "2026-08-30T11:13:26Z",
+      "boundary_digest": "736a879661c34929524d6a24f727e410a67f7484ca36c1442d92a61af643464a",
+      "observed_through": "2026-08-30T11:13:26Z",
+      "closed_at": "2026-08-30T11:13:26Z",
+      "terminality_evidence": "redacted-audit-boundary",
+      "roots": [{ "host": "codex", "session_id": "24110000-0000-4000-8000-000000000001" }],
+      "external_sessions": [
+        { "host": "claude-code", "session_id": "24110000-0000-4000-8000-000000000101", "dispatch_id": "dispatch-redacted-1" },
+        { "host": "claude-code", "session_id": "24110000-0000-4000-8000-000000000102", "dispatch_id": "dispatch-redacted-2" },
+        { "host": "claude-code", "session_id": "24110000-0000-4000-8000-000000000101", "dispatch_id": "dispatch-redacted-3" }
+      ],
+      "expected": {
+        "identity_digest_sha256": "c5ae9e097ae67bebaf2ed14f0353e45858cdd0fd7ee6da93765dec9f2f9eef8d",
+        "counts": { "root_sessions": 1, "descendant_sessions": 34, "external_reviewer_sessions": 2, "dispatch_rows": 3 },
+        "metrics": { "root_observed_tokens": 4735007, "descendant_observed_tokens": 4433007, "external_reviewer_observed_tokens": 48206, "lineage_observed_tokens": 9216220 }
+      }
+    },
+    "root_usage": { "input": 4000000, "output": 735007, "cache_read": null, "cache_creation": null },
+    "descendant_usage": [
+      100000, 100000, 100000, 100000, 100000, 100000, 100000, 100000, 100000, 100000,
+      100000, 100000, 100000, 100000, 100000, 100000, 100000, 100000, 100000, 100000,
+      100000, 100000, 100000, 100000, 100000, 100000, 100000, 100000, 100000, 100000,
+      100000, 100000, 100000, 1133007
+    ],
+    "external_usage": [
+      { "session_id": "24110000-0000-4000-8000-000000000101", "input": 20000, "output": 10000 },
+      { "session_id": "24110000-0000-4000-8000-000000000102", "input": 10000, "output": 8206 }
+    ]
+  },
+  "privacy_markers": {
+    "home": "HOME_PATH_MARKER_SENTINEL",
+    "email": "EMAIL_ACCOUNT_MARKER_SENTINEL",
+    "secret": "SECRET_MARKER_SENTINEL",
+    "transcript_body": "TRANSCRIPT_BODY_MARKER_SENTINEL"
+  }
+}

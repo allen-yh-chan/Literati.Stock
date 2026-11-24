@@ -1,0 +1,11 @@
+# devpro-agent-rules gitattributes managed begin
+.devpro/scripts/hooks-git/* text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+.claude/settings.json text eol=lf
+.codex/hooks.json text eol=lf
+.cursor/hooks.json text eol=lf
+.opencode/plugins/devpro-hooks.js text eol=lf
+.devpro/agent-rules/anti-patterns-design.md whitespace=-trailing-space
+.devpro/scripts/tests/fixtures/d30-post-hoc-r11-reviewer-output.md whitespace=-trailing-space
+# devpro-agent-rules gitattributes managed end

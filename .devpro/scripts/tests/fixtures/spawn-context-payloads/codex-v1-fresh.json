@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "source": "2026-08-31 observed Codex v1 shape",
+  "host": "codex",
+  "expected": "allow",
+  "payload": { "tool_name": "spawn_agent", "tool_input": { "fork_context": false } }
+}

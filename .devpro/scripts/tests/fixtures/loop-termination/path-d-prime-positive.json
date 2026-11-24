@@ -1,0 +1,22 @@
+{
+  "_meta": {
+    "description": "Path D' fresh-equivalent positive case: sticky verdict PASS was recorded against a reviewed sha; PR head then moved forward by a whitelist-only bookkeeping commit (openspec/changes/** decisions.md only). Modeled on design.md D11 (a) 'PR #2407 round 8 record-PASS commit' scenario.",
+    "sha_provenance": "placeholder — form-equivalent 40-hex (a1a1...\/b2b2...), NOT a real PR #2407 commit sequence. See ../README.md.",
+    "mock_env": "CROSS_MODEL_MERGE_GATE_MOCK_COMPARE_OUTPUT",
+    "pii": "none"
+  },
+  "sticky": {
+    "verdict": "PASS",
+    "last_reviewed_sha": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+  },
+  "prData": {
+    "headRefOid": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+    "baseRefName": "main"
+  },
+  "compare": {
+    "status": "ahead",
+    "files": [
+      { "filename": "openspec/changes/archive/2026-08-30-add-web-theme-locale-design-check/decisions.md" }
+    ]
+  }
+}

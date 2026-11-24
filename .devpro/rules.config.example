@@ -1,0 +1,35 @@
+# Devpro Agent Rules — Rigor Level 設定範本
+#
+# 使用方式：複製本檔為 .devpro/rules.config 並改 agent_rules_level= 的值後 commit。
+#   cp .devpro/rules.config.example .devpro/rules.config
+#
+# .devpro/rules.config 屬 consumer repo 自身版控（consumer 自己 commit）。
+#
+# 格式：key=value（每行一對），key 名為 agent_rules_level，有效值：full | lite | off（預設 lite）。
+# 未知 key 的行會被忽略（forward-compat；目前只認 agent_rules_level）。
+# 無設定／無該 key／空檔 → lite；明確非法值／空值／讀取失敗 → full 保護。
+# 裸值（無 = 的行）不再相容，視同未知 key 被忽略。
+agent_rules_level=lite
+#
+# Precedence（高→低）：
+#   1. 環境變數 DEVPRO_AGENT_RULES_LEVEL（per-shell，工程師個人，不留 repo 痕跡）
+#   2. 本檔 .devpro/rules.config（consumer 自身 commit）
+#   3. 內建預設 lite
+#
+# 不被 sync 覆蓋的真 invariant：
+#   充要條件是「source repo 永不擁有 .devpro/rules.config」+
+#   「sync-agent-rules.mjs 是 source-driven walk（walkSourceFiles）
+#   不鏡像刪除 consumer extras」。
+#   因此 consumer 把 config 放在 .devpro/ 下完全安全。
+#
+# 三級行為概覽：
+#   full  — 完整流程 + 全 hook fire（建議正式 repo）
+#   lite  — 預設；免 OpenSpec/pre-flight/六軸/Recap/multi-agent；advisory·nudge hook
+#           no-op；但保留 git/PR workflow-integrity gate（merge 策略 / worktree /
+#           attribution）、4 條底線、測試綠燈
+#   off   — 純 AI 模式；幾乎所有 hook no-op（含非底線 blocking gate）；
+#           ⚠ SQL 拼接無 hook 防護、force-push 不擋，工程師自負
+#           仍保 4 條底線：禁直推 main、禁 PII querystring、
+#           禁 email/絕對路徑入 repo、禁 AI 工具品牌標記入 git 歷史（compliance）
+#
+# 完整規範見 .devpro/agent-rules/rules-rigor-level.md

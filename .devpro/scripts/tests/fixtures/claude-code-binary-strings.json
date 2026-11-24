@@ -1,0 +1,21 @@
+{
+  "schema": "devpro.claude-code-binary-strings/v1",
+  "version": "2.1.259",
+  "captured_at": "2026-09-03",
+  "source": "installed Claude Code binary (versions/<version>, filename only; no absolute path recorded)",
+  "method": "grep -a -o <string> <binary> | wc -l",
+  "strings": {
+    "CLAUDE_CODE_FORK_SUBAGENT": 5,
+    "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS": 5,
+    "CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": 5,
+    "CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION": 2
+  },
+  "absent": {
+    "forkMode": 0,
+    "CLAUDE_CODE_FORK_MODE": 0
+  },
+  "notes": {
+    "CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION": "presence only; semantics unverified; not part of policy (brd A5)",
+    "subagent_type_fork": "literal `subagent_type: \"fork\"` present (3 occurrences); carrier for the hook fork branch (design D2)"
+  }
+}

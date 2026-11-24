@@ -1,0 +1,23 @@
+{
+  "_meta": {
+    "description": "Reverse of path-d-prime-positive.json: same base scenario, but the compare diff also touches a non-whitelisted rule leaf (.devpro/agent-rules/**). MUST NOT be treated as fresh-equivalent even though it also contains an otherwise-whitelisted openspec/changes/** file.",
+    "sha_provenance": "placeholder — form-equivalent 40-hex, NOT a real PR #2407 commit sequence. See ../README.md.",
+    "mock_env": "CROSS_MODEL_MERGE_GATE_MOCK_COMPARE_OUTPUT",
+    "pii": "none"
+  },
+  "sticky": {
+    "verdict": "PASS",
+    "last_reviewed_sha": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+  },
+  "prData": {
+    "headRefOid": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+    "baseRefName": "main"
+  },
+  "compare": {
+    "status": "ahead",
+    "files": [
+      { "filename": "openspec/changes/archive/2026-08-30-add-web-theme-locale-design-check/decisions.md" },
+      { "filename": ".devpro/agent-rules/code-review-checklist.md" }
+    ]
+  }
+}

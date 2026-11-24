@@ -1,0 +1,16 @@
+{
+  "schema": "devpro.spawn-admission-record/v1",
+  "record_id": "e5447775-e3d0-41d9-a564-87f1ff84e48c",
+  "change_id": "fix-zero-value-review-rounds",
+  "host": "claude-code",
+  "admitted_at": "2026-09-08T18:12:13.075Z",
+  "head_sha": "6242664f66aec9d8dccb522321d416ff09a3b62b",
+  "prompt_sha256": "5fd8f092c2aac7b027fbea949724e8b53054e0192599ae5b764ed5a877407ca8",
+  "objective": "independent-judgment",
+  "responsibility_id": "primary-review",
+  "instance_mode": "fresh",
+  "evidence_scope": "下方 touch_list 全部 repo-relative 路徑＋`openspec/changes/fix-zero-value-review-rounds/{proposal.md,design.md,decisions.md,tasks.md,qa-test-scope.md,specs/**}`＋落盤路徑 `<main-checkout-root>/notes/review-fix-zero-value-review-rounds-r1.md`",
+  "return_and_stop": "結構化 receipt payload（review_mode／findings／verdict）；回報後停，不得修檔",
+  "role": "dp-reviewer",
+  "role_binding": "host-verified"
+}

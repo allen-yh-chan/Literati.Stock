@@ -1,0 +1,37 @@
+{
+  "name": "devpro-agent-skill-refs",
+  "description": "On-demand external reviewer CLI manuals and documentation workflow skills, kept out of the devpro plugin entry tree.",
+  "groups": [
+    {
+      "name": "autonomous-ai-agents",
+      "description": "On-demand CLI manuals for external autonomous coding agents used by Devpro review workflows.",
+      "skills": [
+        {
+          "name": "claude-code",
+          "path": ".devpro/agent-skills-refs/autonomous-ai-agents/claude-code",
+          "description": "Claude Code CLI operation manual for external review and automation workflows.",
+          "upstreamCopy": true,
+          "allowedWarnings": ["missing-use-when", "long-body"]
+        },
+        {
+          "name": "codex",
+          "path": ".devpro/agent-skills-refs/autonomous-ai-agents/codex",
+          "description": "OpenAI Codex CLI operation manual for external review and automation workflows.",
+          "upstreamCopy": true,
+          "allowedWarnings": ["missing-use-when", "long-body"]
+        }
+      ]
+    },
+    {
+      "name": "documentation",
+      "description": "First-party documentation and diagram workflow skills.",
+      "skills": [
+        {
+          "name": "design-doc-mermaid",
+          "path": ".devpro/agent-skills-refs/documentation/design-doc-mermaid",
+          "description": "Mermaid and design-document diagram workflow for source-grounded, validated, readable diagrams."
+        }
+      ]
+    }
+  ]
+}

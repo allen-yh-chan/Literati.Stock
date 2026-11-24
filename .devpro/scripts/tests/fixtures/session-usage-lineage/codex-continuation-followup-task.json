@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "source": "2026-09-03 live probe (T27, strengthen-subagent-delegation-strategy): codex exec -s read-only spawned the temporary custom agent dp-probe-preload once, waited, then sent one follow-up. Ids, cwd, nicknames, timestamps and message bodies are synthetic or redacted; record shapes are verbatim.",
+  "host": "codex",
+  "cli_version": "0.152.1",
+  "features": { "multi_agent": "stable", "multi_agent_v2": "unstable" },
+  "model_visible_tool_names": [
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "collaboration.followup_task",
+    "collaboration.send_message",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents"
+  ],
+  "rollout_function_call_names": { "spawn": "spawn_agent", "wait": "wait_agent", "continuation": "followup_task" },
+  "preload": {
+    "custom_agent_toml": "[[skills.config]] path = \"<repo>/.devpro/agent-skills/openspec/openspec-artifact-authoring/SKILL.md\" enabled = true",
+    "skill_body_in_child_context": false,
+    "skill_listing_in_child_context": true,
+    "child_reported_skill_bodies_in_context": [],
+    "child_reported_listing_entry": "openspec-artifact-authoring (file: <skills-root>/openspec-artifact-authoring/SKILL.md)",
+    "developer_instructions_reached_child": true,
+    "child_tool_names_include_spawn_agent": true
+  },
+  "parent_rollout": [
+    { "type": "session_meta", "payload": { "id": "<parent-id>", "cwd": "<cwd>", "originator": "codex_exec", "cli_version": "0.152.1", "source": "exec", "thread_source": "user" } },
+    { "type": "event_msg", "payload": { "type": "task_started", "turn_id": "<parent-turn-1>" } },
+    { "type": "response_item", "payload": { "type": "function_call", "name": "spawn_agent", "call_id": "call_spawn", "arguments": "{\"agent_type\":\"dp-probe-preload\",\"fork_turns\":\"none\",\"message\":\"<opaque-fernet-token>\",\"task_name\":\"t27_codex_preload_and_continuation_probe\"}" } },
+    { "type": "response_item", "payload": { "type": "function_call_output", "call_id": "call_spawn", "output": "{\"task_name\":\"/root/t27_codex_preload_and_continuation_probe\"}" } },
+    { "type": "world_state", "payload": { "full": false, "state": { "environments": { "subagents": "- t27_codex_preload_and_continuation_probe: <nickname>" } } } },
+    { "type": "response_item", "payload": { "type": "function_call", "name": "wait_agent", "call_id": "call_wait", "arguments": "{\"timeout_ms\":3600000}" } },
+    { "type": "response_item", "payload": { "type": "function_call_output", "call_id": "call_wait", "output": "{\"message\":\"Wait completed.\",\"timed_out\":false}" } },
+    { "type": "inter_agent_communication_metadata", "payload": { "trigger_turn": false } },
+    { "type": "response_item", "payload": { "type": "agent_message", "content": [{ "type": "input_text", "text": "Message Type: FINAL_ANSWER\nTask name: /root\nSender: /root/t27_codex_preload_and_continuation_probe\nPayload:\n<child-json-reply>" }] } },
+    { "type": "response_item", "payload": { "type": "function_call", "name": "followup_task", "call_id": "call_followup", "arguments": "{\"message\":\"<opaque-fernet-token>\",\"target\":\"/root/t27_codex_preload_and_continuation_probe\"}" } },
+    { "type": "response_item", "payload": { "type": "function_call_output", "call_id": "call_followup", "output": "" } },
+    { "type": "inter_agent_communication_metadata", "payload": { "trigger_turn": false } },
+    { "type": "response_item", "payload": { "type": "agent_message", "content": [{ "type": "input_text", "text": "Message Type: FINAL_ANSWER\nTask name: /root\nSender: /root/t27_codex_preload_and_continuation_probe\nPayload:\nACK" }] } },
+    { "type": "event_msg", "payload": { "type": "task_complete", "turn_id": "<parent-turn-1>" } }
+  ],
+  "child_rollout": [
+    { "type": "session_meta", "payload": { "id": "<child-id>", "session_id": "<parent-id>", "parent_thread_id": "<parent-id>", "cwd": "<cwd>", "originator": "codex_exec", "cli_version": "0.152.1", "thread_source": "subagent", "agent_role": "dp-probe-preload", "agent_path": "/root/t27_codex_preload_and_continuation_probe", "agent_nickname": "<nickname>", "source": { "subagent": { "thread_spawn": { "parent_thread_id": "<parent-id>", "depth": 1, "agent_path": "/root/t27_codex_preload_and_continuation_probe", "agent_nickname": "<nickname>", "agent_role": "dp-probe-preload" } } } } },
+    { "type": "event_msg", "payload": { "type": "task_started", "turn_id": "<child-turn-1>", "collaboration_mode_kind": "default" } },
+    { "type": "response_item", "payload": { "type": "message", "role": "developer", "content": [{ "type": "input_text", "text": "<developer_instructions from the custom agent TOML, verbatim>" }, { "type": "input_text", "text": "<skills_instructions> listing: name, description and path per skill; no SKILL.md body" }] } },
+    { "type": "turn_context", "payload": { "turn_id": "<child-turn-1>", "sandbox_policy": { "type": "read-only" }, "collaboration_mode": { "mode": "default", "settings": { "reasoning_effort": "low" } } } },
+    { "type": "inter_agent_communication_metadata", "payload": { "trigger_turn": true } },
+    { "type": "response_item", "payload": { "type": "agent_message", "content": [{ "type": "input_text", "text": "Message Type: NEW_TASK\nTask name: /root/t27_codex_preload_and_continuation_probe\nSender: /root\nPayload:\n" }, { "type": "encrypted_content", "encrypted_content": "<opaque-fernet-token>" }] } },
+    { "type": "response_item", "payload": { "type": "message", "role": "assistant", "content": [{ "type": "output_text", "text": "<child-json-reply>" }] } },
+    { "type": "event_msg", "payload": { "type": "task_complete", "turn_id": "<child-turn-1>", "duration_ms": 12000 } },
+    { "type": "event_msg", "payload": { "type": "task_started", "turn_id": "<child-turn-2>", "collaboration_mode_kind": "default" } },
+    { "type": "turn_context", "payload": { "turn_id": "<child-turn-2>" } },
+    { "type": "inter_agent_communication_metadata", "payload": { "trigger_turn": true } },
+    { "type": "response_item", "payload": { "type": "agent_message", "content": [{ "type": "input_text", "text": "Message Type: NEW_TASK\nTask name: /root/t27_codex_preload_and_continuation_probe\nSender: /root\nPayload:\n" }, { "type": "encrypted_content", "encrypted_content": "<opaque-fernet-token>" }] } },
+    { "type": "response_item", "payload": { "type": "message", "role": "assistant", "content": [{ "type": "output_text", "text": "ACK" }] } },
+    { "type": "event_msg", "payload": { "type": "task_complete", "turn_id": "<child-turn-2>", "duration_ms": 2161 } }
+  ],
+  "derivation": {
+    "continuation_turns": "child task_started boundaries minus one (2 - 1 = 1); one followup_task call in the parent matches",
+    "spawn_depth": "child session_meta.payload.source.subagent.thread_spawn.depth",
+    "agent_type": "child thread_spawn.agent_role (custom agent name)",
+    "context_mode": "parent spawn_agent arguments fork_turns joined to the child through function_call_output.task_name == thread_spawn.agent_path; none -> fresh",
+    "gap_when_boundaries_missing": "codex-continuation-unverified"
+  }
+}

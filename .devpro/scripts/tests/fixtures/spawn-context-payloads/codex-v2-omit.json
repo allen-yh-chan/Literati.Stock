@@ -1,0 +1,10 @@
+{
+  "source": "2026-08-31 prior live shadow-hook probe, redacted tracked replay",
+  "host": "codex",
+  "payload": {
+    "tool_name": "collaborationspawn_agent",
+    "tool_input": {
+      "message": "encrypted-redacted"
+    }
+  }
+}

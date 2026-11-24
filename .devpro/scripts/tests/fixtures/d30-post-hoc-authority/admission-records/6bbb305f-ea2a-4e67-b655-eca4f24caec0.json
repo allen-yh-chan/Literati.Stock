@@ -1,0 +1,16 @@
+{
+  "schema": "devpro.spawn-admission-record/v1",
+  "record_id": "6bbb305f-ea2a-4e67-b655-eca4f24caec0",
+  "change_id": "fix-zero-value-review-rounds",
+  "host": "claude-code",
+  "admitted_at": "2026-09-08T19:22:27.685Z",
+  "head_sha": "d9495497060b11583f70dd85219986e6de804ccc",
+  "prompt_sha256": "f507e92844637835484812df49758db6abfe524e47dbedff303d49a7a120a746",
+  "objective": "independent-judgment",
+  "responsibility_id": "primary-review",
+  "instance_mode": "fresh",
+  "evidence_scope": "openspec/changes/fix-zero-value-review-rounds/ (proposal.md, design.md, decisions.md, brd.md, tasks.md, qa-test-scope.md, specs/), openspec/specs/workflow-cost-controls/spec.md, openspec/specs/archive-tooling/spec.md, and the Touch-listed carriers under .devpro/scripts/ and .devpro/agent-rules/; plus <main-checkout-root>/notes/review-fix-zero-value-review-rounds-r1.md and <main-checkout-root>/notes/review-fix-zero-value-review-rounds-receipt-r1.json",
+  "return_and_stop": "structured receipt payload (review_mode / findings / verdict); report and stop, modify no file",
+  "role": "dp-reviewer",
+  "role_binding": "host-verified"
+}

@@ -1,0 +1,10 @@
+{
+  "source": "existing Cursor adapter Task matcher contract",
+  "host": "cursor",
+  "payload": {
+    "tool_name": "Task",
+    "tool_input": {
+      "prompt": "bounded fixture"
+    }
+  }
+}

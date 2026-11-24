@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "description": "D2 judgement-table row #1: gh CLI spawn/exit failure or non-JSON stdout (includes offline / rate-limit 403/429). Simulated via the CROSS_MODEL_MERGE_GATE_MOCK_COMPARE_ERROR env var, which the production code treats as 'compare unavailable' without inspecting the string content.",
+    "sha_provenance": "placeholder — form-equivalent 40-hex, NOT a real PR #2407 commit sequence. See ../README.md.",
+    "mock_env": "CROSS_MODEL_MERGE_GATE_MOCK_COMPARE_ERROR",
+    "pii": "none"
+  },
+  "sticky": {
+    "verdict": "PASS",
+    "last_reviewed_sha": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+  },
+  "prData": {
+    "headRefOid": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+    "baseRefName": "main"
+  },
+  "compare": {
+    "error": "simulated: gh api spawn failed / non-zero exit / non-JSON stdout (offline or rate-limited)"
+  }
+}
