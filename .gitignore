@@ -28,6 +28,8 @@ ENV/
 *.swo
 .cursor/*
 !.cursor/rules/
+!.cursor/agents/
+!.cursor/hooks.json
 
 # OS
 .DS_Store
