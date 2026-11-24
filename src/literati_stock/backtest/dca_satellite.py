@@ -342,11 +342,15 @@ def render_report(results: dict[Strategy, Result], params: Params, data: MarketD
 
 
 def today_taipei() -> date:
+    """台北時區的今天（台股交易日以此為準，也是快取「區間是否已收盤」的判斷基準）。"""
     return datetime.now(ZoneInfo("Asia/Taipei")).date()
 
 
 async def load_raw_rows(end: date, cache_dir: Path, refresh: bool) -> RawMarketRows:
-    """Cached 0050 raw rows from ``DATA_START`` to ``end`` (shared by all backtests)."""
+    """讀取或抓取 0050 自 ``DATA_START`` 至 ``end`` 的原始資料（所有回測共用）。
+
+    ``end`` 早於台北今天時才寫入快取；``refresh`` 為真時略過快取重抓。
+    """
     # Anonymous FinMind quota suffices (3 requests); no DB settings required.
     token = os.environ.get("FINMIND_TOKEN", "")
 
@@ -360,6 +364,7 @@ async def load_raw_rows(end: date, cache_dir: Path, refresh: bool) -> RawMarketR
 
 
 async def load_market_data(end: date, cache_dir: Path, refresh: bool) -> MarketData:
+    """同 ``load_raw_rows``，再解析為排序後的收盤價與除權息事件。"""
     return parse_market_data(await load_raw_rows(end, cache_dir, refresh))
 
 

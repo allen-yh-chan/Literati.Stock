@@ -28,8 +28,9 @@ Funding a — 預支 (baseline A = pure DCA)
     accrues 1.5% p.a., compounded per calendar day. While a loan is open,
     triggers are ignored. An open loan at segment end is netted from value.
     Control a-ALL: trigger at every month-end (no signal). Advancing money
-    into a rising market has positive expected value on its own, so a
-    trigger only shows timing skill if its gain per advance beats a-ALL's.
+    into a rising market has positive expected value on its own; a trigger's
+    gain per advance vs a-ALL's is a hint about timing, not a clean
+    attribution (it also mixes interest paid and holding-period length).
 
 Funding b — 年終 (baseline B0 = buy the bonus on receipt)
     NT$30,000 arrives at the first bar of each February (in segment). It
@@ -74,6 +75,7 @@ import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
+from decimal import Decimal
 from pathlib import Path
 from typing import Literal
 
@@ -215,6 +217,23 @@ def _split_adjusted_volumes(data: MarketData, volumes: Sequence[float]) -> list[
     return adjusted
 
 
+def _volume_surge_red(
+    close: float, open_: float, volume: float, window_sum: float, count: int, params: Params
+) -> bool:
+    """Frozen ``volume_surge_red`` test, exact like its Decimal original.
+
+    Prices go through ``Decimal(str(x))`` (the quoted value), so a bar exactly
+    at the 1.5% threshold fires; ``volume >= k × mean`` is checked as
+    ``volume × count >= k × sum`` to avoid dividing.
+    """
+    close_d, open_d = Decimal(str(close)), Decimal(str(open_))
+    if close_d < Decimal(str(params.vol_min_close)) or open_d <= 0:
+        return False
+    if (close_d - open_d) / open_d < Decimal(str(params.vol_min_red_bar)):
+        return False
+    return window_sum > 0 and volume * count >= params.vol_multiple * window_sum
+
+
 def compute_signals(
     data: MarketData, opens: Sequence[float], volumes: Sequence[float], params: Params
 ) -> dict[SignalName, list[bool]]:
@@ -244,13 +263,8 @@ def compute_signals(
             if i + 1 >= params.sma_window:
                 window = tr[i + 1 - params.sma_window : i + 1]
                 signals["T200"][i] = tr[i] < sum(window) / len(window)
-        close = bars[i].close
-        mean_vol = vol_sum / min(i + 1, params.vol_window)
-        signals["TVOL"][i] = (
-            close >= params.vol_min_close
-            and (close - opens[i]) / opens[i] >= params.vol_min_red_bar
-            and mean_vol > 0
-            and vol[i] >= params.vol_multiple * mean_vol
+        signals["TVOL"][i] = _volume_surge_red(
+            bars[i].close, opens[i], vol[i], vol_sum, min(i + 1, params.vol_window), params
         )
     return signals
 
@@ -274,11 +288,12 @@ def simulate(
 ) -> Result:
     bars = data.bars
     contributes = contribution_flags(bars)
-    shares = cash = loan = costs = contributed = interest_paid = 0.0
+    shares = cash = loan = costs = contributed = borrowed = repaid = 0.0
     repayments_left = 0
     topups = 0
     pending = False
     units = nav_peak = max_dd = 0.0
+    wiped = False  # leveraged net value hit <= 0: drawdown is 100% from then on
     cashflows: list[tuple[date, float]] = []
 
     def buy(amount: float, price: float) -> float:
@@ -305,7 +320,7 @@ def simulate(
             amount = params.monthly_contribution
             if repayments_left > 0:
                 pay = loan if repayments_left == 1 else amount
-                interest_paid += pay - amount
+                repaid += pay
                 loan = 0.0 if repayments_left == 1 else loan - pay
                 repayments_left -= 1
                 inflow += pay
@@ -321,7 +336,12 @@ def simulate(
                 else:
                     cash += params.bonus_amount
         if inflow > 0:
-            units += inflow if units == 0 else inflow / (value_before / units)
+            if units == 0:
+                units = inflow
+            elif value_before <= 0:
+                wiped = True
+            elif not wiped:
+                units += inflow / (value_before / units)
             contributed += inflow
             cashflows.append((bar.day, -inflow))
 
@@ -329,6 +349,7 @@ def simulate(
             pending = False
             if spec.funding == "a":
                 loan = params.advance_months * params.monthly_contribution
+                borrowed += loan
                 shares += buy(loan, price)
                 repayments_left = params.advance_months
                 topups += 1
@@ -340,10 +361,13 @@ def simulate(
         if i < end and signal[i] and not (spec.funding == "a" and repayments_left > 0):
             pending = True
 
-        if units > 0:
+        if units > 0 and not wiped:
             nav = (shares * price + cash - loan) / units
             nav_peak = max(nav_peak, nav)
-            max_dd = max(max_dd, 1.0 - nav / nav_peak)
+            wiped = nav <= 0
+            max_dd = max(max_dd, min(1.0, 1.0 - nav / nav_peak))
+        if wiped:
+            max_dd = 1.0
 
     final_value = shares * bars[end].close + cash - loan
     cashflows.append((bars[end].day, final_value))
@@ -355,7 +379,7 @@ def simulate(
         max_drawdown=max_dd,
         topups=topups,
         total_costs=costs,
-        loan_interest=interest_paid,
+        loan_interest=repaid + loan - borrowed,
     )
 
 
@@ -421,7 +445,8 @@ def render_report(
         f"、紅 K ≥{params.vol_min_red_bar:.1%}；手續費 {params.buy_fee_rate:.4%}",
         "成交假設：所有觸發一律於訊號隔天收盤成交；訊號使用全歷史資料，資金各段從零開始。",
         f"判定：任一段加碼 < {params.min_topups} 次為「樣本不足」；兩段 ΔXIRR 皆 > 0 才「勝」。"
-        "預支（a）提早投入本身有正期望值，時點是否有效看「每次預支增益」是否高於 a-ALL。",
+        "預支（a）提早投入本身有正期望值；「每次預支淨值差」＝(期末淨值 − A) ÷ 預支次數，"
+        "含利息與持有期間差異，與 a-ALL 比較只是時點效果的參考，不是純時點歸因。",
         "提醒：TVOL 只測 0050 本身的爆量紅 K，不能證明或否定個股層面的「量先價行」。",
     ]
     for seg in segments:
@@ -431,7 +456,7 @@ def render_report(
             f"## {seg.name}（{seg.start} ~ {seg.end or bars[-1].day}）",
             "",
             "| 策略 | 說明 | XIRR | ΔXIRR (bp) | Δ期末淨值 | 最大回檔 | 加碼次數 "
-            "| 每次預支增益 | 借款利息 | 總投入 | 期末淨值 |",
+            "| 每次預支淨值差 | 借款利息（含應計） | 總投入 | 期末淨值 |",
             "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
         ]
         for spec in SPECS:

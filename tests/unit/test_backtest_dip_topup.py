@@ -505,3 +505,63 @@ async def test_loader_does_not_retry_when_closes_themselves_are_unusable(
     with pytest.raises(ValueError, match="at least 2 price bars"):
         await module.load_inputs(date(2024, 1, 3), tmp_path, refresh=False)
     assert calls == [False]
+
+
+# --- review round 1 (F1/F2/F5/F6) ------------------------------------------------
+
+
+@pytest.mark.parametrize("crash", [75.0, 74.0], ids=["net-zero", "net-negative"])
+def test_leveraged_wipeout_caps_drawdown_and_keeps_cashflows(crash: float) -> None:
+    # Feb 2: 10 sh own + 30 sh borrowed at 100; Feb 28 crash makes net <= 0
+    # before the Mar 2 repayment.
+    bars = _months([100.0] * 6)
+    bars[3] = ("2024-02-28", crash)
+    bars[4] = ("2024-03-02", crash)
+    data = _data(bars)
+    result = _run(data, "a-T10", _signal(len(data.bars), 1))
+    assert result.max_drawdown == pytest.approx(1.0)
+    assert result.contributed == pytest.approx(5000.0)
+    assert math.isfinite(result.final_value)
+
+
+@pytest.mark.parametrize(("close", "fires"), [(30.44, False), (30.45, True), (30.46, True)])
+def test_red_bar_threshold_is_exact_at_quote_precision(close: float, fires: bool) -> None:
+    data = _vol_data([30.0, 30.0, 30.0, close, 30.0])
+    opens = [30.0] * 5
+    volumes = [10.0, 10.0, 10.0, 40.0, 10.0]
+    assert compute_signals(data, opens, volumes, FREE)["TVOL"][3] is fires
+
+
+def test_volume_threshold_equality_fires_without_float_drift() -> None:
+    data = _vol_data([100.0, 100.0, 100.0, 102.0, 100.0])
+    opens = [100.0] * 5
+    params = replace(FREE, vol_window=7)
+    # 7-bar window ending at bar 3 holds 4 bars: mean (2+2+2+6)/4 = 3 -> 6 >= 2 x 3.
+    # Dividing by 7-capped counts or summing in a different order must not break the tie.
+    assert compute_signals(data, opens, [2.0, 2.0, 2.0, 6.0, 2.0], params)["TVOL"][3] is True
+
+
+def test_open_loan_interest_is_reported_as_accrued() -> None:
+    data = _flat()
+    params = replace(FREE, loan_annual_rate=0.10)
+    # May month-end signal -> advance on Jun 2, still open at Jun 28.
+    result = _run(data, "a-T10", _signal(len(data.bars), 9), params)
+    days = (date(2024, 6, 28) - date(2024, 6, 2)).days
+    accrued = 3000.0 * (1.10 ** (days / 365) - 1.0)
+    assert result.loan_interest == pytest.approx(accrued)
+    # value nets the full balance (principal + accrued interest)
+    assert result.final_value == pytest.approx(5000.0 + 3000.0 - 3000.0 - accrued)
+
+
+def test_sma_trigger_does_not_fire_when_equal_to_full_window_average() -> None:
+    data = _data(
+        [
+            ("2024-01-02", 100.0),
+            ("2024-01-28", 100.0),
+            ("2024-02-02", 100.0),
+            ("2024-02-28", 100.0),  # full window, SMA == TR -> not strictly below
+            ("2024-03-02", 100.0),
+        ]
+    )
+    opens, volumes = _volume_inputs(5)
+    assert compute_signals(data, opens, volumes, FREE)["T200"] == _signal(5)
