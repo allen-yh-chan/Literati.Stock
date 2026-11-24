@@ -363,9 +363,11 @@ def simulate(
 
         if units > 0 and not wiped:
             nav = (shares * price + cash - loan) / units
-            nav_peak = max(nav_peak, nav)
-            wiped = nav <= 0
-            max_dd = max(max_dd, min(1.0, 1.0 - nav / nav_peak))
+            if nav <= 0:
+                wiped = True
+            else:
+                nav_peak = max(nav_peak, nav)
+                max_dd = max(max_dd, 1.0 - nav / nav_peak)
         if wiped:
             max_dd = 1.0
 

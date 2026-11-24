@@ -565,3 +565,26 @@ def test_sma_trigger_does_not_fire_when_equal_to_full_window_average() -> None:
     )
     opens, volumes = _volume_inputs(5)
     assert compute_signals(data, opens, volumes, FREE)["T200"] == _signal(5)
+
+
+# --- review round 2 (F1) ----------------------------------------------------------
+
+
+def test_advance_before_first_contribution_then_negative_net_completes() -> None:
+    data = _data(
+        [
+            ("2024-01-02", 100.0),
+            ("2024-01-10", 100.0),  # segment starts mid-month; daily signal here
+            ("2024-01-11", 100.0),  # advance: 30 sh borrowed, no own units yet
+            ("2024-02-01", 60.0),  # first inflow repays 1000: net 1800 - 2000 < 0
+            ("2024-03-01", 100.0),
+            ("2024-04-01", 100.0),
+            ("2024-05-01", 100.0),
+            ("2024-05-15", 100.0),
+        ]
+    )
+    result = _run(data, "a-TVOL", _signal(len(data.bars), 1), start=1)
+    assert result.max_drawdown == pytest.approx(1.0)
+    assert result.contributed == pytest.approx(4000.0)
+    # 30 sh + 10 sh (May) at 100, loan fully repaid.
+    assert result.final_value == pytest.approx(4000.0)
