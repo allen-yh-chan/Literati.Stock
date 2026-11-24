@@ -66,6 +66,18 @@ def _bar_index_on_or_after(days: list[date], event_day: date, what: str) -> int:
     return idx
 
 
+def _finite_number(value: object) -> float | None:
+    """``value`` as a finite float, or ``None`` (non-numeric, bool, NaN/inf, or
+    an integer too large for a float, which JSON can carry)."""
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return None
+    try:
+        number = float(value)
+    except OverflowError:
+        return None
+    return number if math.isfinite(number) else None
+
+
 def _row_date(row: dict[str, Any], what: str) -> date:
     value = row.get("date")
     if isinstance(value, str):
@@ -79,10 +91,10 @@ def _row_date(row: dict[str, Any], what: str) -> date:
 def _parse_bars(rows: list[dict[str, Any]]) -> tuple[Bar, ...]:
     bars: list[Bar] = []
     for row in rows:
-        close = row.get("close")
-        if not isinstance(close, int | float) or not math.isfinite(close) or close <= 0:
-            raise ValueError(f"invalid close {close!r} on {row.get('date')}")
-        bars.append(Bar(day=_row_date(row, "price"), close=float(close)))
+        close = _finite_number(row.get("close"))
+        if close is None or close <= 0:
+            raise ValueError(f"invalid close {row.get('close')!r} on {row.get('date')}")
+        bars.append(Bar(day=_row_date(row, "price"), close=close))
     bars.sort(key=lambda b: b.day)
     for prev, cur in zip(bars, bars[1:], strict=False):
         if prev.day == cur.day:
@@ -91,10 +103,10 @@ def _parse_bars(rows: list[dict[str, Any]]) -> tuple[Bar, ...]:
 
 
 def _finite_float(row: dict[str, Any], key: str, what: str) -> float:
-    value = row.get(key)
-    if not isinstance(value, int | float) or not math.isfinite(value):
-        raise ValueError(f"invalid {what} {value!r} in {row!r}")
-    return float(value)
+    value = _finite_number(row.get(key))
+    if value is None:
+        raise ValueError(f"invalid {what} {row.get(key)!r} in {row!r}")
+    return value
 
 
 def _split_ratio(before: float, after: float) -> float:

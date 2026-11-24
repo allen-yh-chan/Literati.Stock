@@ -410,3 +410,44 @@ async def test_fetched_rows_the_parser_rejects_are_not_cached(tmp_path: Path) ->
 def test_missing_date_fails_with_value_error(raw: RawMarketRows) -> None:
     with pytest.raises(ValueError, match="date"):
         parse_market_data(raw)
+
+
+# --- review round 4 (F1) -------------------------------------------------------
+
+_HUGE = 10**309  # a valid JSON integer that overflows float
+
+
+@pytest.mark.parametrize("close", [_HUGE, True], ids=["overflow", "bool"])
+def test_close_that_is_not_a_finite_real_number_fails_with_value_error(close: object) -> None:
+    with pytest.raises(ValueError, match="close"):
+        parse_market_data(_raw([_price("2025-06-10", close), _price("2025-06-11", 1.0)]))  # type: ignore[arg-type]
+
+
+def test_overflowing_dividend_and_split_values_fail_with_value_error() -> None:
+    bars = [_price("2025-06-10", 100.0), _price("2025-06-11", 50.0)]
+    with pytest.raises(ValueError, match="dividend amount"):
+        parse_market_data(_raw(bars, dividends=[_dividend("2025-06-11", _HUGE)]))  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="split price"):
+        parse_market_data(_raw(bars, splits=[_split("2025-06-11", _HUGE, 50.0)]))  # type: ignore[arg-type]
+
+
+async def test_cache_with_overflowing_close_is_refetched_and_reused(tmp_path: Path) -> None:
+    text = (
+        '{"format": 2, "fetched_on": "2025-07-01", "dividends": [], "splits": [], "prices": ['
+        f'{{"date": "2025-06-10", "close": {_HUGE}}}, {{"date": "2025-06-11", "close": 1.0}}]}}'
+    )
+    (tmp_path / _CACHE_NAME).write_text(text, encoding="utf-8")
+    calls, fetcher = _counting_fetcher(_valid_raw())
+
+    assert await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher, today=AFTER) == _valid_raw()
+    assert await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher, today=AFTER) == _valid_raw()
+    assert len(calls) == 1
+
+
+async def test_fetched_overflowing_close_is_returned_but_not_cached(tmp_path: Path) -> None:
+    bad = _raw([_price("2025-06-10", _HUGE), _price("2025-06-11", 1.0)])  # type: ignore[arg-type]
+    calls, fetcher = _counting_fetcher(bad)
+
+    assert await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher, today=AFTER) == bad
+    assert len(calls) == 1
+    assert not (tmp_path / _CACHE_NAME).exists()
