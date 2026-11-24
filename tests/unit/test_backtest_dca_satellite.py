@@ -289,7 +289,7 @@ async def test_loader_rejects_insufficient_data_with_clear_message(
 
     monkeypatch.setattr(module, "fetch_raw_rows", fake_fetch)
     with pytest.raises(ValueError, match="at least 2 price bars"):
-        await module._load(date(2003, 6, 30), tmp_path, refresh=False)
+        await module.load_market_data(date(2003, 6, 30), tmp_path, refresh=False)
 
 
 def test_cli_turns_data_errors_into_clean_exit(monkeypatch: pytest.MonkeyPatch) -> None:
