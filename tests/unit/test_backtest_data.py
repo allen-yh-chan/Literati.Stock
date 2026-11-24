@@ -42,6 +42,13 @@ def _split(day: str, before: float, after: float, kind: str = "分割") -> dict[
     }
 
 
+def _valid_raw() -> RawMarketRows:
+    """Smallest raw payload that parse_market_data accepts (2 bars)."""
+    return RawMarketRows(
+        prices=[_price("2025-06-10", 100.0), _price("2025-06-11", 101.0)], dividends=[], splits=[]
+    )
+
+
 def _raw(
     prices: list[dict[str, Any]],
     dividends: list[dict[str, Any]] | None = None,
@@ -107,7 +114,7 @@ def test_duplicate_bar_date_fails_loudly() -> None:
 
 async def test_load_or_fetch_uses_cache_on_second_call(tmp_path: Path) -> None:
     calls: list[int] = []
-    raw = _raw([_price("2025-06-10", 100.0)])
+    raw = _valid_raw()
 
     async def fetcher() -> RawMarketRows:
         calls.append(1)
@@ -125,7 +132,7 @@ async def test_load_or_fetch_refresh_bypasses_cache(tmp_path: Path) -> None:
 
     async def fetcher() -> RawMarketRows:
         calls.append(1)
-        return _raw([_price("2025-06-10", 100.0)])
+        return _valid_raw()
 
     await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), fetcher, today=AFTER)
     await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), fetcher, refresh=True, today=AFTER)
@@ -200,7 +207,7 @@ async def test_load_or_fetch_never_reuses_cache_for_today_or_later(tmp_path: Pat
 
     async def fetcher() -> RawMarketRows:
         calls.append(1)
-        return _raw([_price("2025-06-10", 100.0)])
+        return _valid_raw()
 
     today = date(2025, 6, 30)
     await load_or_fetch(tmp_path, "0050", today, fetcher, today=today)
@@ -213,7 +220,7 @@ async def test_load_or_fetch_never_reuses_cache_for_today_or_later(tmp_path: Pat
 
 async def test_load_or_fetch_refetches_when_cache_is_corrupt(tmp_path: Path) -> None:
     (tmp_path / "0050_2025-06-30.json").write_text('{"prices": [', encoding="utf-8")
-    raw = _raw([_price("2025-06-10", 100.0)])
+    raw = _valid_raw()
 
     async def fetcher() -> RawMarketRows:
         return raw
@@ -225,7 +232,7 @@ async def test_load_or_fetch_refetches_when_cache_is_corrupt(tmp_path: Path) -> 
 async def test_failed_cache_write_keeps_previous_file_readable(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    old = _raw([_price("2025-06-10", 100.0)])
+    old = _valid_raw()
 
     async def old_fetcher() -> RawMarketRows:
         return old
@@ -233,7 +240,7 @@ async def test_failed_cache_write_keeps_previous_file_readable(
     await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), old_fetcher, today=AFTER)
 
     async def new_fetcher() -> RawMarketRows:
-        return _raw([_price("2025-06-11", 101.0)])
+        return _raw([_price("2025-06-11", 101.0), _price("2025-06-12", 102.0)])
 
     import literati_stock.backtest.data as data_module
 
@@ -273,7 +280,7 @@ def _counting_fetcher(
 
 
 async def test_load_or_fetch_requires_explicit_today(tmp_path: Path) -> None:
-    _, fetcher = _counting_fetcher(_raw([_price("2025-06-10", 100.0)]))
+    _, fetcher = _counting_fetcher(_valid_raw())
     with pytest.raises(TypeError, match="today"):
         await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher)  # pyright: ignore[reportCallIssue]
 
@@ -320,7 +327,7 @@ async def test_cache_fetched_on_or_before_end_is_never_trusted(tmp_path: Path) -
 )
 async def test_malformed_cache_is_refetched_and_repaired(tmp_path: Path, payload: bytes) -> None:
     (tmp_path / _CACHE_NAME).write_bytes(payload)
-    raw = _raw([_price("2025-06-10", 100.0)])
+    raw = _valid_raw()
     calls, fetcher = _counting_fetcher(raw)
 
     assert await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher, today=AFTER) == raw
@@ -340,3 +347,66 @@ def test_split_type_must_match_price_direction(before: float, after: float, kind
                 splits=[_split("2025-06-11", before, after, kind=kind)],
             )
         )
+
+
+# --- review round 3 (F1) -------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "prices",
+    [
+        [{"date": "2025-06-10"}, {"date": "2025-06-11"}],
+        [{"close": 100.0}, {"close": 101.0}],
+        [_price("2025-06-10", 100.0)],
+    ],
+)
+async def test_cache_that_parser_rejects_is_refetched_and_repaired(
+    tmp_path: Path, prices: list[dict[str, Any]]
+) -> None:
+    unusable = {
+        "format": 2,
+        "fetched_on": "2025-07-01",
+        "prices": prices,
+        "dividends": [],
+        "splits": [],
+    }
+    (tmp_path / _CACHE_NAME).write_text(json.dumps(unusable), encoding="utf-8")
+    raw = _valid_raw()
+    calls, fetcher = _counting_fetcher(raw)
+
+    first = await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher, today=AFTER)
+    second = await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher, today=AFTER)
+    assert first == second == raw
+    parse_market_data(second)
+    assert len(calls) == 1
+
+
+async def test_fetched_rows_the_parser_rejects_are_not_cached(tmp_path: Path) -> None:
+    bad = _raw([{"date": "2025-06-10"}, {"date": "2025-06-11"}])
+    calls, fetcher = _counting_fetcher(bad)
+
+    assert await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher, today=AFTER) == bad
+    assert await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher, today=AFTER) == bad
+    assert len(calls) == 2
+    assert not (tmp_path / _CACHE_NAME).exists()
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        RawMarketRows(prices=[{"close": 100.0}, {"close": 101.0}], dividends=[], splits=[]),
+        RawMarketRows(
+            prices=[_price("2025-06-10", 100.0), _price("2025-06-11", 101.0)],
+            dividends=[{"stock_or_cache_dividend": "息", "stock_and_cache_dividend": 1.0}],
+            splits=[],
+        ),
+        RawMarketRows(
+            prices=[_price("2025-06-10", 100.0), _price("2025-06-11", 101.0)],
+            dividends=[],
+            splits=[{"type": "分割", "before_price": 100.0, "after_price": 50.0}],
+        ),
+    ],
+)
+def test_missing_date_fails_with_value_error(raw: RawMarketRows) -> None:
+    with pytest.raises(ValueError, match="date"):
+        parse_market_data(raw)

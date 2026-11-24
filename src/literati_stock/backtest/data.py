@@ -66,13 +66,23 @@ def _bar_index_on_or_after(days: list[date], event_day: date, what: str) -> int:
     return idx
 
 
+def _row_date(row: dict[str, Any], what: str) -> date:
+    value = row.get("date")
+    if isinstance(value, str):
+        try:
+            return date.fromisoformat(value)
+        except ValueError:
+            pass
+    raise ValueError(f"missing or invalid {what} date in {row!r}")
+
+
 def _parse_bars(rows: list[dict[str, Any]]) -> tuple[Bar, ...]:
     bars: list[Bar] = []
     for row in rows:
         close = row.get("close")
         if not isinstance(close, int | float) or not math.isfinite(close) or close <= 0:
             raise ValueError(f"invalid close {close!r} on {row.get('date')}")
-        bars.append(Bar(day=date.fromisoformat(str(row["date"])), close=float(close)))
+        bars.append(Bar(day=_row_date(row, "price"), close=float(close)))
     bars.sort(key=lambda b: b.day)
     for prev, cur in zip(bars, bars[1:], strict=False):
         if prev.day == cur.day:
@@ -109,7 +119,7 @@ def parse_market_data(raw: RawMarketRows) -> MarketData:
     for row in raw.dividends:
         if row.get("stock_or_cache_dividend") != _CASH_DIVIDEND_KIND:
             raise ValueError(f"only cash dividends are supported, got {row!r}")
-        day = date.fromisoformat(str(row["date"]))
+        day = _row_date(row, "dividend")
         idx = _bar_index_on_or_after(days, day, "dividend")
         amount = _finite_float(row, "stock_and_cache_dividend", "dividend amount")
         if amount < 0:
@@ -120,7 +130,7 @@ def parse_market_data(raw: RawMarketRows) -> MarketData:
     for row in raw.splits:
         if row.get("type") not in _SPLIT_KINDS:
             raise ValueError(f"unsupported split type in {row!r}")
-        day = date.fromisoformat(str(row["date"]))
+        day = _row_date(row, "split")
         idx = _bar_index_on_or_after(days, day, "split")
         before = _finite_float(row, "before_price", "split price")
         after = _finite_float(row, "after_price", "split price")
@@ -151,8 +161,9 @@ def _read_cache(path: Path, end: date) -> RawMarketRows | None:
     """Return the cached rows, or ``None`` if the file is missing or untrustworthy.
 
     Trusted means: current format, valid UTF-8 JSON object, each field a list
-    of row objects, and fetched strictly after ``end`` (so the range was
-    already closed when it was fetched and cannot be an intraday snapshot).
+    of row objects that ``parse_market_data`` accepts, and fetched strictly
+    after ``end`` (so the range was already closed when it was fetched and
+    cannot be an intraday snapshot).
     """
     try:
         loaded: Any = json.loads(path.read_text(encoding="utf-8"))
@@ -180,7 +191,12 @@ def _read_cache(path: Path, end: date) -> RawMarketRows | None:
         if not all(isinstance(row, dict) for row in rows):
             return None
         fields[name] = cast("list[dict[str, Any]]", rows)
-    return RawMarketRows(**fields)
+    raw = RawMarketRows(**fields)
+    try:
+        parse_market_data(raw)
+    except ValueError:
+        return None
+    return raw
 
 
 async def load_or_fetch(
@@ -196,8 +212,10 @@ async def load_or_fetch(
 
     ``today`` is required (the caller's market-local date): a range ending on
     or after it may still gain bars, so it is always fetched and never cached.
-    A cache file that is malformed, from an older format, or fetched on or
-    before ``end`` is refetched and overwritten. Writes go to a temp file in
+    A cache file that is malformed, from an older format, rejected by
+    ``parse_market_data``, or fetched on or before ``end`` is refetched and
+    overwritten; fetched rows the parser rejects are returned but never
+    cached, so a bad response is not pinned on disk. Writes go to a temp file in
     the same directory and are published with an atomic ``os.replace`` so
     readers never see half a file.
     """
@@ -209,6 +227,10 @@ async def load_or_fetch(
             return cached
     raw = await fetcher()
     if still_open:
+        return raw
+    try:
+        parse_market_data(raw)
+    except ValueError:
         return raw
     cache_dir.mkdir(parents=True, exist_ok=True)
     payload = {"format": _CACHE_FORMAT, "fetched_on": today.isoformat(), **asdict(raw)}
