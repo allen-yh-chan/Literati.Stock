@@ -171,10 +171,12 @@ def total_return_index(data: MarketData) -> list[float]:
 def xirr(cashflows: Sequence[tuple[date, float]]) -> float:
     """Annualised internal rate of return via bisection on (-99%, 1000%).
 
-    Returns ``nan`` when the rate is undefined: all flows on one day, no
+    Returns ``nan`` when the rate is undefined: no flows, all flows on one day, no
     flow of each sign, or no root bracketed (e.g. horizons of a few days,
     where annualisation explodes). The report shows it as-is.
     """
+    if not cashflows:
+        return math.nan
     t0 = cashflows[0][0]
     if all(d == t0 for d, _ in cashflows):
         return math.nan

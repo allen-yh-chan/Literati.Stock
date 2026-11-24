@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+from collections.abc import Awaitable, Callable
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -13,6 +15,8 @@ from literati_stock.backtest.data import (
     load_or_fetch,
     parse_market_data,
 )
+
+AFTER = date(2025, 7, 1)  # a "today" strictly after the 2025-06-30 cache range
 
 
 def _price(day: str, close: float) -> dict[str, Any]:
@@ -109,8 +113,8 @@ async def test_load_or_fetch_uses_cache_on_second_call(tmp_path: Path) -> None:
         calls.append(1)
         return raw
 
-    first = await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), fetcher)
-    second = await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), fetcher)
+    first = await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), fetcher, today=AFTER)
+    second = await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), fetcher, today=AFTER)
     assert first == raw
     assert second == raw
     assert len(calls) == 1
@@ -123,8 +127,8 @@ async def test_load_or_fetch_refresh_bypasses_cache(tmp_path: Path) -> None:
         calls.append(1)
         return _raw([_price("2025-06-10", 100.0)])
 
-    await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), fetcher)
-    await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), fetcher, refresh=True)
+    await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), fetcher, today=AFTER)
+    await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), fetcher, refresh=True, today=AFTER)
     assert len(calls) == 2
 
 
@@ -214,8 +218,8 @@ async def test_load_or_fetch_refetches_when_cache_is_corrupt(tmp_path: Path) -> 
     async def fetcher() -> RawMarketRows:
         return raw
 
-    assert await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), fetcher) == raw
-    assert await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), fetcher) == raw
+    assert await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), fetcher, today=AFTER) == raw
+    assert await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), fetcher, today=AFTER) == raw
 
 
 async def test_failed_cache_write_keeps_previous_file_readable(
@@ -226,7 +230,7 @@ async def test_failed_cache_write_keeps_previous_file_readable(
     async def old_fetcher() -> RawMarketRows:
         return old
 
-    await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), old_fetcher)
+    await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), old_fetcher, today=AFTER)
 
     async def new_fetcher() -> RawMarketRows:
         return _raw([_price("2025-06-11", 101.0)])
@@ -238,11 +242,101 @@ async def test_failed_cache_write_keeps_previous_file_readable(
 
     monkeypatch.setattr(data_module.os, "replace", boom)
     with pytest.raises(OSError, match="disk full"):
-        await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), new_fetcher, refresh=True)
+        await load_or_fetch(
+            tmp_path, "0050", date(2025, 6, 30), new_fetcher, refresh=True, today=AFTER
+        )
     monkeypatch.undo()
 
     async def unused() -> RawMarketRows:
         raise AssertionError("cache should be used")
 
-    assert await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), unused) == old
+    assert await load_or_fetch(tmp_path, "0050", date(2025, 6, 30), unused, today=AFTER) == old
     assert [p.name for p in tmp_path.iterdir()] == ["0050_2025-06-30.json"]
+
+
+# --- review round 2 (F1/F2/F3) -----------------------------------------------
+
+_CACHE_END = date(2025, 6, 30)
+_CACHE_NAME = "0050_2025-06-30.json"
+
+
+def _counting_fetcher(
+    raw: RawMarketRows,
+) -> tuple[list[int], Callable[[], Awaitable[RawMarketRows]]]:
+    calls: list[int] = []
+
+    async def fetcher() -> RawMarketRows:
+        calls.append(1)
+        return raw
+
+    return calls, fetcher
+
+
+async def test_load_or_fetch_requires_explicit_today(tmp_path: Path) -> None:
+    _, fetcher = _counting_fetcher(_raw([_price("2025-06-10", 100.0)]))
+    with pytest.raises(TypeError, match="today"):
+        await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher)  # pyright: ignore[reportCallIssue]
+
+
+async def test_legacy_cache_without_fetch_date_is_refetched_once(tmp_path: Path) -> None:
+    # The round-1 code wrote bare rows with no fetch date, possibly mid-session.
+    intraday = {"prices": [_price("2025-06-30", 99.0)], "dividends": [], "splits": []}
+    (tmp_path / _CACHE_NAME).write_text(json.dumps(intraday), encoding="utf-8")
+    complete = _raw([_price("2025-06-27", 98.0), _price("2025-06-30", 100.0)])
+    calls, fetcher = _counting_fetcher(complete)
+
+    assert await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher, today=AFTER) == complete
+    assert await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher, today=AFTER) == complete
+    assert len(calls) == 1
+
+
+async def test_cache_fetched_on_or_before_end_is_never_trusted(tmp_path: Path) -> None:
+    stale = {
+        "format": 2,
+        "fetched_on": "2025-06-30",
+        "prices": [_price("2025-06-30", 99.0)],
+        "dividends": [],
+        "splits": [],
+    }
+    (tmp_path / _CACHE_NAME).write_text(json.dumps(stale), encoding="utf-8")
+    complete = _raw([_price("2025-06-27", 98.0), _price("2025-06-30", 100.0)])
+    calls, fetcher = _counting_fetcher(complete)
+
+    assert await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher, today=AFTER) == complete
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        b'{"format": 2, "fetched_on": "2025-07-01", "prices": null, "dividends": [], "splits": []}',
+        b'{"format": 2, "fetched_on": "2025-07-01", "prices": [1], "dividends": [], "splits": []}',
+        b'{"format": 2, "fetched_on": "2025-07-01", "prices": [], "dividends": {}, "splits": []}',
+        b'{"format": 2, "fetched_on": "not-a-date", "prices": [], "dividends": [], "splits": []}',
+        b'{"format": 2, "fetched_on": "2025-07-01", "prices": []}',
+        b"[]",
+        b"\xff\xfe not utf-8",
+    ],
+)
+async def test_malformed_cache_is_refetched_and_repaired(tmp_path: Path, payload: bytes) -> None:
+    (tmp_path / _CACHE_NAME).write_bytes(payload)
+    raw = _raw([_price("2025-06-10", 100.0)])
+    calls, fetcher = _counting_fetcher(raw)
+
+    assert await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher, today=AFTER) == raw
+    assert await load_or_fetch(tmp_path, "0050", _CACHE_END, fetcher, today=AFTER) == raw
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize(
+    ("before", "after", "kind"),
+    [(188.65, 47.16, "反分割"), (100.0, 300.0, "分割")],
+)
+def test_split_type_must_match_price_direction(before: float, after: float, kind: str) -> None:
+    with pytest.raises(ValueError, match="direction"):
+        parse_market_data(
+            _raw(
+                [_price("2025-06-10", before), _price("2025-06-11", after)],
+                splits=[_split("2025-06-11", before, after, kind=kind)],
+            )
+        )

@@ -23,7 +23,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import asdict, dataclass
 from datetime import date
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from literati_stock.ingest.clients.finmind import FinMindClient
 
@@ -31,6 +31,10 @@ _CASH_DIVIDEND_KIND = "息"
 _SPLIT_KINDS = frozenset({"分割", "反分割"})
 # A whole-share exchange (n:1 split or 1:n reverse split) must be within 1%.
 _SPLIT_SNAP_TOLERANCE = 0.01
+# Cache files carry this format number and the date they were fetched on;
+# anything else (including the unversioned round-1 format) is refetched.
+_CACHE_FORMAT = 2
+_RAW_FIELDS = ("prices", "dividends", "splits")
 
 
 @dataclass(frozen=True)
@@ -122,7 +126,10 @@ def parse_market_data(raw: RawMarketRows) -> MarketData:
         after = _finite_float(row, "after_price", "split price")
         if before <= 0 or after <= 0:
             raise ValueError(f"invalid split price in {row!r}")
-        splits[idx] = splits.get(idx, 1.0) * _split_ratio(before, after)
+        ratio = _split_ratio(before, after)
+        if (row["type"] == "分割") != (ratio > 1.0):
+            raise ValueError(f"split type does not match price direction in {row!r}")
+        splits[idx] = splits.get(idx, 1.0) * ratio
 
     if len(bars) < 2:
         raise ValueError(f"need at least 2 price bars to backtest, got {len(bars)}")
@@ -140,37 +147,75 @@ async def fetch_raw_rows(
     )
 
 
+def _read_cache(path: Path, end: date) -> RawMarketRows | None:
+    """Return the cached rows, or ``None`` if the file is missing or untrustworthy.
+
+    Trusted means: current format, valid UTF-8 JSON object, each field a list
+    of row objects, and fetched strictly after ``end`` (so the range was
+    already closed when it was fetched and cannot be an intraday snapshot).
+    """
+    try:
+        loaded: Any = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return None
+    except ValueError:  # JSONDecodeError and UnicodeDecodeError
+        return None
+    if not isinstance(loaded, dict):
+        return None
+    payload = cast("dict[str, Any]", loaded)
+    if payload.get("format") != _CACHE_FORMAT:
+        return None
+    try:
+        fetched_on = date.fromisoformat(str(payload.get("fetched_on")))
+    except ValueError:
+        return None
+    if fetched_on <= end:
+        return None
+    fields: dict[str, list[dict[str, Any]]] = {}
+    for name in _RAW_FIELDS:
+        value: Any = payload.get(name)
+        if not isinstance(value, list):
+            return None
+        rows = cast("list[Any]", value)
+        if not all(isinstance(row, dict) for row in rows):
+            return None
+        fields[name] = cast("list[dict[str, Any]]", rows)
+    return RawMarketRows(**fields)
+
+
 async def load_or_fetch(
     cache_dir: Path,
     stock_id: str,
     end: date,
     fetcher: Callable[[], Awaitable[RawMarketRows]],
     *,
+    today: date,
     refresh: bool = False,
-    today: date | None = None,
 ) -> RawMarketRows:
     """Return cached raw rows for ``(stock_id, end)`` or fetch and cache them.
 
-    A range ending on or after ``today`` may still gain bars (intraday runs),
-    so it is always fetched and never cached. A corrupt cache file is
-    refetched. Writes go to a temp file in the same directory and are
-    published with an atomic ``os.replace`` so readers never see half a file.
+    ``today`` is required (the caller's market-local date): a range ending on
+    or after it may still gain bars, so it is always fetched and never cached.
+    A cache file that is malformed, from an older format, or fetched on or
+    before ``end`` is refetched and overwritten. Writes go to a temp file in
+    the same directory and are published with an atomic ``os.replace`` so
+    readers never see half a file.
     """
     path = cache_dir / f"{stock_id}_{end.isoformat()}.json"
-    still_open = today is not None and end >= today
-    if path.exists() and not refresh and not still_open:
-        try:
-            return RawMarketRows(**json.loads(path.read_text(encoding="utf-8")))
-        except (json.JSONDecodeError, TypeError):
-            pass  # corrupt or foreign cache: refetch and overwrite below
+    still_open = end >= today
+    if not refresh and not still_open:
+        cached = _read_cache(path, end)
+        if cached is not None:
+            return cached
     raw = await fetcher()
     if still_open:
         return raw
     cache_dir.mkdir(parents=True, exist_ok=True)
+    payload = {"format": _CACHE_FORMAT, "fetched_on": today.isoformat(), **asdict(raw)}
     fd, tmp_name = tempfile.mkstemp(dir=cache_dir, prefix=f".{path.name}.", suffix=".tmp")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as tmp:
-            json.dump(asdict(raw), tmp, ensure_ascii=False)
+            json.dump(payload, tmp, ensure_ascii=False)
         os.replace(tmp_name, path)
     except BaseException:
         Path(tmp_name).unlink(missing_ok=True)

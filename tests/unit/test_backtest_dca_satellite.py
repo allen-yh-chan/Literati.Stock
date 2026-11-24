@@ -264,6 +264,7 @@ def test_xirr_returns_nan_when_no_root_is_bracketed() -> None:
         [(date(2024, 1, 1), -100.0), (date(2024, 1, 1), 100.0)],
         [(date(2024, 1, 1), 0.0)],
         [(date(2024, 1, 1), -100.0), (date(2025, 1, 1), 0.0)],
+        [],
     ],
 )
 def test_xirr_is_undefined_for_degenerate_cashflows(flows: list[tuple[date, float]]) -> None:
